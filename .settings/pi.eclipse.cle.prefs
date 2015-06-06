@@ -2,6 +2,10 @@
 //Lexer.lex/lex-comply-jlex=false
 //Lexer.lex/lex-output=src
 //Lexer.lex/lex-skip-min=false
+//LexerEspecification.lex/lex-code-method=0
+//LexerEspecification.lex/lex-comply-jlex=false
+//LexerEspecification.lex/lex-output=src
+//LexerEspecification.lex/lex-skip-min=false
 //Parser.cup/cup-compact-red=false
 //Parser.cup/cup-debug=false
 //Parser.cup/cup-expected-conflicts=0

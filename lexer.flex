@@ -1,24 +1,3 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Copyright (C) 1998-2015  Gerwin Klein <lsf@jflex.de>                    *
- * All rights reserved.                                                    *
- *                                                                         *
- * License: BSD                                                            *
- *                                                                         *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-/* Java 1.2 language lexer specification */
-
-/* Use together with unicode.flex for Unicode preprocesssing */
-/* and java12.cup for a Java 1.2 parser                      */
-
-/* Note that this lexer specification is not tuned for speed.
-   It is in fact quite slow on integer and floating point literals, 
-   because the input is read twice and the methods used to parse
-   the numbers are not very fast. 
-   For a production quality application (e.g. a Java compiler) 
-   this could be optimized */
-
-
 import java_cup.runtime.*;
 
 %%

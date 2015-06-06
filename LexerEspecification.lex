@@ -15,8 +15,8 @@ import static parser.Sym.*;
 %line
 %column
 
-// %public
-%final
+%public
+// %final
 // %abstract
 
 %cupsym parser.Sym

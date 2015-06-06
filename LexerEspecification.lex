@@ -45,9 +45,22 @@ import static parser.Sym.*;
 	}
 %}
 
-ANY			=	.
+/* terminator characters */
+LineTerminator = \r|\n|\r\n
+InputCharacter = [^\r\n]
 
+WhiteSpace = {LineTerminator} | [ \t\f]
+
+Comments = {DocComment} | {PatternComment} | {LineComment}
+
+LineComment = "//" {InputCharacter}* {LineTerminator}?
+DocComment = "/*" "*"+ [^/*] ~"*/"
+PatternComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+
+EOF			=	.
 %%
 
-{ANY}		{	return sym(ANY); }
+{EOF}		{return sym(EOF);}
+
+{WhiteSpace}  {/*ignore*/}
 

@@ -1,0 +1,6 @@
+public class nome{
+}
+private class nome2{
+}
+protected class nome3{
+}

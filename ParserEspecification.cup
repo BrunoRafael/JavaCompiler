@@ -76,8 +76,22 @@ terminal CONST, GOTO;
 non terminal	compilation_unit;
 non terminal	package_name;
 non terminal    simple_name;
+non terminal 	goal;
 
 start with goal;
 
-compilation_unit		::=		simple_name;
+goal ::= compilation_unit;
+compilation_unit  ::=	package_statement | import_statement | type_declaration;
+
+/*package declaration*/
+package_statement ::= PACKAGE package_declaration SEMICOLON | ;
+package_declaration ::= package_name | (package_name DOT identifier);
+
+/*Identifier*/
+package_name :: = simple_name | navigation_name;
+navigation_name ::= package_name DOT IDENTIFIER;
+simple_name ::= IDENTIFIER;
+
+import_statement ::=
+type_declaration ::=
 simple_name ::=	IDENTIFIER;

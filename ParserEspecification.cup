@@ -816,8 +816,7 @@ assignment_operator ::=
 expression_opt ::=
 	|	expression
 	;
-expression ::=	assignment_expression
-	;
+expression ::=	assignment_expression;
 constant_expression ::=
 		expression
 	;

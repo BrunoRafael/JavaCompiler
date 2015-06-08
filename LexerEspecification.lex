@@ -101,7 +101,6 @@ SingleCharacter = [^\r\n\'\\]
   "catch"                        { return symbol(CATCH); }
   "char"                         { return symbol(CHAR); }
   "class"                        { return symbol(CLASS); }
-  "const"                        { return symbol(CONST); }
   "continue"                     { return symbol(CONTINUE); }
   "do"                           { return symbol(DO); }
   "double"                       { return symbol(DOUBLE); }
@@ -120,7 +119,6 @@ SingleCharacter = [^\r\n\'\\]
   "long"                         { return symbol(LONG); }
   "native"                       { return symbol(NATIVE); }
   "new"                          { return symbol(NEW); }
-  "goto"                         { return symbol(GOTO); }
   "if"                           { return symbol(IF); }
   "public"                       { return symbol(PUBLIC); }
   "short"                        { return symbol(SHORT); }

@@ -2,13 +2,6 @@ package parser;
 
 import java_cup.runtime.*;
 
-parser code
-{:
-:}
-
-action code
-{:
-:}
 
 terminal BOOLEAN; // primitive_type
 terminal BYTE, SHORT, INT, LONG, CHAR; // integral_type
@@ -64,6 +57,8 @@ terminal java.lang.Character CHARACTER_LITERAL;
 terminal java.lang.String STRING_LITERAL;
 terminal java.lang.String IDENTIFIER; // name
 terminal NULL_LITERAL;
+terminal STRING;
+terminal CHARLITERAL;
 
 // strictfp keyword, new in Java 1.2
 terminal STRICTFP;
@@ -73,25 +68,25 @@ terminal CONST, GOTO;
 
 /*NON TERMINALS*/
 
+non terminal 	goal;
 non terminal	compilation_unit;
 non terminal	package_name;
+non terminal	package_declaration;
+non terminal	package_statement;
 non terminal    simple_name;
-non terminal 	goal;
+non terminal 	navigation_name;
+non terminal 	import_statement;
+non terminal 	type_declaration;
 
 start with goal;
 
 goal ::= compilation_unit;
-compilation_unit  ::=	package_statement | import_statement | type_declaration;
+compilation_unit  ::= package_statement;
 
 /*package declaration*/
 package_statement ::= PACKAGE package_declaration SEMICOLON | ;
-package_declaration ::= package_name | (package_name DOT identifier);
+package_declaration ::= simple_name | navigation_name;
 
 /*Identifier*/
-package_name :: = simple_name | navigation_name;
 navigation_name ::= package_name DOT IDENTIFIER;
 simple_name ::= IDENTIFIER;
-
-import_statement ::=
-type_declaration ::=
-simple_name ::=	IDENTIFIER;

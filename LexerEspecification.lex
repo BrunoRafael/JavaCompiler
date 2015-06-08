@@ -58,7 +58,7 @@ Exponent = [eE] [+-]? [0-9]+
 %state INIT
 %%
 <INIT>{
-	\"                             { yybegin(YYINITIAL); return symbol(sym.STRING_LITERAL, string.toString()); }
+	\"                             { yybegin(YYINITIAL); return symbol(Sym.STRING_LITERAL, string.toString()); }
     [^\n\r\"\\]+                   { string.append( yytext() ); }
     \\t                            { string.append('\t'); }
     \\n                            { string.append('\n'); }

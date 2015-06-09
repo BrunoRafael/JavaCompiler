@@ -2,7 +2,8 @@ public class Assignment{
 
 public int in;
 private float fl;
-public static double db;
+protected static double db;
+public final String str;
 
 double d = 10.5314;
 long l = 1234567891;

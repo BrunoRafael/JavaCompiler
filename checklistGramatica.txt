@@ -17,7 +17,7 @@ float_literal
 float_type_suffix
 for_statement
 identifier
-if_statement
+if_statement OK!
 import_statement
 integer_literal
 interface_declaration

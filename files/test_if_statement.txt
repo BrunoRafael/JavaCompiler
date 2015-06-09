@@ -1,0 +1,16 @@
+public class testeIf{
+int x = 10;
+
+	public void metodo(){
+		if (true){
+			x = 5;
+		}
+		else if(false){
+			x = 7;
+		}else{
+			if(false){
+				x = 10;
+			}
+		}
+	}
+}

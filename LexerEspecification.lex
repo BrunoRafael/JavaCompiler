@@ -253,6 +253,7 @@ SingleCharacter = [^\r\n\'\\]
   /* error cases */
   \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }
   {LineTerminator}               { throw new RuntimeException("Unterminated string at end of line"); }
+  
 }
 
 <CHARLITERAL> {
@@ -277,6 +278,6 @@ SingleCharacter = [^\r\n\'\\]
 }
 
 /* error fallback */
-.|\n                             { throw new RuntimeException("Illegal character \""+yytext()+
-                                                              "\" at line "+yyline+", column "+yycolumn); }
+.|\n                             { throw new RuntimeException("Erro - Caractere ilegal \""+yytext()+ "\" na linha "+yyline+", coluna "+yycolumn); }
+                                                              
 <<EOF>>                          { return symbol(EOF); }

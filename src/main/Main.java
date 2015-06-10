@@ -15,7 +15,7 @@ public class Main {
                 System.out.println("No errors.");
             }
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println(e.getMessage());
             System.exit(1);
         }
     }

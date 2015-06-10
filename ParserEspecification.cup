@@ -1,12 +1,12 @@
 package parser;
 
 import java_cup.runtime.*;
-
+ 
 terminal BOOLEAN; // primitive_type
 terminal BYTE, SHORT, INT, LONG, CHAR; // integral_type
 terminal FLOAT, DOUBLE; // floating_point_type
 terminal LBRACK, RBRACK; // array_type
-terminal DOT; // qualified_name
+terminal DOT; // qualified_name (.)
 terminal SEMICOLON, MULT, COMMA, LBRACE, RBRACE, EQ, LPAREN, RPAREN, COLON; // ; * , { } = ( ) :
 terminal PACKAGE; // package_declaration
 terminal IMPORT; // import_declaration
@@ -38,7 +38,7 @@ terminal MINUSMINUS; // postdecrement_expression
 terminal PLUS, MINUS, COMP, NOT, DIV, MOD;
 terminal LSHIFT, RSHIFT, URSHIFT; // shift_expression
 terminal LT, GT, LTEQ, GTEQ, INSTANCEOF; // relational_expression < > <= >=
-terminal EQEQ, NOTEQ; // equality_expression
+terminal EQEQ, NOTEQ; // equality_expression == !=
 terminal AND; // and_expression
 terminal XOR; // exclusive_or_expression
 terminal OR;  // inclusive_or_expression

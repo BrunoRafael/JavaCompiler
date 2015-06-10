@@ -1,43 +1,43 @@
 arglist
 bit_expression
-casting_expression
+casting_expression		- OK!
 character
-class_declaration
-class_name
+class_declaration		- OK!
+class_name				- OK!
 compilation_unit
-constructor_declaration
-creating_expression
+constructor_declaration		- OK!
+creating_expression			- OK!
 decimal_digits
-doc_comment
-do_statement
+doc_comment				- OK!
+do_statement			- OK!
 exponent_part
-expression
-field_declaration
-float_literal
-float_type_suffix
-for_statement
-identifier
-if_statement OK!
-import_statement
-integer_literal
-interface_declaration
-interface_name
-literal_expression
-logical_expression
-method_declaration
-modifier
-numeric_expression
-package_name			- ok
-package_statement	   -	ok
-package_declaration    -    ok
+expression				- OK!
+field_declaration		- OK!
+float_literal			- OK!
+float_type_suffix		- OK!
+for_statement			- OK!
+identifier				- OK!
+if_statement 			- OK!
+import_statement		- OK!
+integer_literal			-OK!
+interface_declaration	-OK!
+interface_name			-OK!
+literal_expression		-OK!
+logical_expression		-OK!
+method_declaration		- OK!
+modifier				- OK!
+numeric_expression		- OK!
+package_name			- OK!
+package_statement	   - OK!
+package_declaration    - OK!
 parameter
 parameter_list
 statement
 statement_block
-static_initializer
+static_initializer		- OK!
 string
 string_expression
-switch_statement
+switch_statement		- OK!
 testing_expression
 try_statement
 type
@@ -46,4 +46,7 @@ type_specifier
 variable_declaration
 variable_declarator
 variable_initializer
-while_statement
+while_statement			- OK!
+
+CHECAR O MODIFICADOR THREADSAFE
+CHECAR O METHOD_DECLARATION

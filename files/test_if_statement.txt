@@ -1,7 +1,6 @@
 public class testeIf{
-int x = 10; 
-
-	public void metodo(){
+	int x = 10; 
+	private void met(){
 		if (true){
 			x = 5;
 		}
@@ -11,6 +10,8 @@ int x = 10;
 			if(false){
 				x = 10;
 			}
-		}
+		}		
+		if (true | false)
+			x=2;
 	}
 }

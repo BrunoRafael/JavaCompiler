@@ -271,7 +271,7 @@ SingleCharacter = [^\r\n\'\\]
   "\\\\"\'                       { yybegin(YYINITIAL); return symbol(CHARACTER_LITERAL, '\\'); }
   \\[0-3]?{OctDigit}?{OctDigit}\' { yybegin(YYINITIAL); 
 			                              int val = Integer.parseInt(yytext().substring(1,yylength()-1),8);
-			                            return symbol(CHARACTER_LITERAL, (char)val); }
+			                            return symbol(CHARACTER_LITERAL, (char)val); } 
   
   /* error cases */
   \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }

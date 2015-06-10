@@ -42,6 +42,7 @@ import parser.Sym;
 
     return result;
   }
+
 %}
 
 /* main character classes */
@@ -278,6 +279,5 @@ SingleCharacter = [^\r\n\'\\]
 }
 
 /* error fallback */
-.|\n                             { throw new RuntimeException("Erro - Caractere ilegal \""+yytext()+ "\" na linha "+yyline+", coluna "+yycolumn); }
-                                                              
+.|\n                             { throw new RuntimeException("Syntax error \" "+yytext() + "\" at line "+yyline+", column "+yycolumn); }
 <<EOF>>                          { return symbol(EOF); }

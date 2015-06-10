@@ -4,3 +4,5 @@ private class nome2{
 }
 protected class nome3{
 }
+
+protected nome5(){}

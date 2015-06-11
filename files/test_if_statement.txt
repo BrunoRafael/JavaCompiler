@@ -1,6 +1,6 @@
 public class testeIf{
 	int x = 10; 
-	private void met(){
+	private void met(int x){
 		if (true){
 			x = 5;
 		}
@@ -9,6 +9,8 @@ public class testeIf{
 		}else{
 			if(false){
 				x = 10;
+			}else{
+				x = 3;
 			}
 		}		
 		if (true | false)

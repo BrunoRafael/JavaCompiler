@@ -4,15 +4,11 @@ private class nome2{
 }
 protected class nome3{
 }
-
-protected class nome5{}
-
-public static class t{}
-
-public final class x{}
-
-public abstract class zz{}
-
-private threadsafe x{}
-
-public transient class zzzz{}
+protected class nome4{
+}
+public static class nome5{
+}
+public final class nome6{
+}
+public abstract class nome7{
+}

@@ -1,7 +1,0 @@
-//import br.com.pac; - no error
-import br.com.* // error
-//importbr.com.ps; // error
-//import ; //error
-//import *;//error
-//import //error
-//import;

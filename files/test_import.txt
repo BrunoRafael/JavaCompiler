@@ -1,1 +1,2 @@
 import pacote;
+import pacote2.pacote1.pacotefinal;

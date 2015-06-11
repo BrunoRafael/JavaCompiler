@@ -1,2 +1,1 @@
-//package com.pacote.bus.algo;
-package name;
+package com.pacote.bus.algo;

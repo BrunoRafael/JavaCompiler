@@ -1,12 +1,14 @@
 /* public comentario static void */
-// sdasdasdasdasd
-// /sdasdasdsadsad
+// comentario2
+// /sdasdasdsadsad/
 //////////////////
+
 /*
 **dsadsad
+**@param
 **
-*******
-***
+**
 */
-/**
+
+/**************
 */

@@ -1,0 +1,84 @@
+import java.io.StreamTokenizer;
+
+public class TesteGeral implements interfaceCriada{
+
+  /*
+  * Metodo que multiplica x e y
+  */
+  public int multiplica(int x, int y){
+  	return x * y;
+  }
+  
+  public int qtLoopsWhile(int i){
+  	int contador = 0;
+  	while(true){
+  		System.out.print("LOOP WHILE: " + contador);
+  		contador ++;
+  		if(contador == i){ 
+  			break;
+  		}
+  	}
+  	return contador;
+  }
+  
+  public int qtLoopsFor(int i){
+  	for(int j = 0; j < i; j++){
+  		System.out.print("LOOP FOR: " + j);
+  	}
+  	return i;
+  }
+
+  public void switchCase(float numero1, float numero2){
+  	char operacao;
+    Scanner entrada = new Scanner(System.in);
+        
+    System.out.print("Escolha sua operação [+ - * / ]: ");
+    operacao = entrada.nextLine().charAt(0);
+        
+    System.out.print("Entre com o primeiro número: ");
+    numero1 = entrada.nextFloat();
+    System.out.print("Entre com o segundo número: ");
+    numero2 = entrada.nextFloat();
+    System.out.println();
+        
+    switch( operacao ){
+    	case '+':
+        	System.out.printf("%.2f + %.2f = %.2f", numero1, numero2, numero1 + numero2);
+          	break;        
+        case '-':
+        	System.out.printf("%.2f - %.2f = %.2f", numero1, numero2, numero1 - numero2);
+            break;
+        case '*':
+       		System.out.printf("%.2f * %.2f = %.2f", numero1, numero2, numero1 * numero2);
+            break;
+        case '/':
+        	System.out.printf("%.2f / %.2f = %.2f", numero1, numero2, numero1 / numero2);
+            break;
+        default:
+            System.out.printf("Você digitou uma operação inválida.");        
+    }
+  }
+
+  public static void main(String args[]) { 
+    double x;
+    StreamTokenizer inp = new StreamTokenizer(System.in);
+    // Lê um dado double a partir do teclado
+    System.out.print("x = "); System.out.flush(); 
+    try {
+       inp.nextToken();
+       x = inp.nval;
+    }
+    catch(java.io.IOException e) {
+       x = 0;
+    }
+
+    // Decide se é possível calcular a raiz quadrada do
+    // número dado. Sendo possível, calcula-a. Do contrário
+    // emite uma mensagem de aviso
+    if(x >= 0)
+      System.out.println("raiz quadrada de x e " + sqrt(x));
+    else
+      System.out.println("x e negativo");
+  }
+
+}

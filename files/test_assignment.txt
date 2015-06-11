@@ -1,17 +1,18 @@
 public class Assignment{
 
-public int in;
-private float fl;
-protected static double db;
-public final String str;
-
-double d = 10.5314;
-long l = 1234567891;
-byte b = 1;
-int i = 2;
-float f = 2.0;
-String s = "string";
-boolean bT = true;
-boolean bF = false;
-
+	public int in;
+	private float fl;
+	protected static double db;
+	public final String str;
+	double d = 10.5314;
+	long l = 1234567891;
+	byte b = 1;
+	int i = 2;
+	float f = 2.0;
+	String s = "string";
+	boolean bT = true;
+	boolean bF = false;
+	String[] myStringArray = new String[3];
+	String[] myStringArray = {"a","b","c"};
+	String[] myStringArray = new String[]{"a","b","c"};
 }

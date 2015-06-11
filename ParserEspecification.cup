@@ -264,7 +264,7 @@ method_header ::= modifiers_opt type method_declarator throws_opt |	modifiers_op
 method_declarator ::= IDENTIFIER LPAREN formal_parameter_list_opt RPAREN | method_declarator LBRACK RBRACK; // deprecated
 	// be careful; the above production also allows 'void foo() []'
 
-formal_parameter_list_opt ::= formal_parameter_list;
+formal_parameter_list_opt ::= formal_parameter_list |;
 formal_parameter_list ::= formal_parameter | formal_parameter_list COMMA formal_parameter;
 formal_parameter ::=
 		type variable_declarator_id

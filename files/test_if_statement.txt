@@ -1,6 +1,6 @@
 public class testeIf{
 	int x = 10; 
-	private void met(int x){
+	private void met(){
 		if (true){
 			x = 5;
 		}

@@ -1,10 +1,10 @@
 arglist
-bit_expression
+bit_expression			- OK!
 casting_expression		- OK!
 character
 class_declaration		- OK!
 class_name				- OK!
-compilation_unit
+compilation_unit		- OK!
 constructor_declaration		- OK!
 creating_expression			- OK!
 decimal_digits

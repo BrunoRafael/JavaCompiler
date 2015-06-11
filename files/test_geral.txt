@@ -9,7 +9,7 @@ public class TesteGeral implements interfaceCriada{
   	return x * y;
   }
   
-  public int qtLoopsWhile(int i){
+  public int qtLoopsWhile(){
   	int contador = 0;
   	while(true){
   		System.out.print("LOOP WHILE: " + contador);
@@ -21,11 +21,10 @@ public class TesteGeral implements interfaceCriada{
   	return contador;
   }
   
-  public int qtLoopsFor(int i){
+  public void qtLoopsFor(){
   	for(int j = 0; j < i; j++){
   		System.out.print("LOOP FOR: " + j);
   	}
-  	return i;
   }
 
   public void switchCase(float numero1, float numero2){

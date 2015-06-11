@@ -38,14 +38,14 @@ static_initializer		- OK!
 string					- OK!
 string_expression		- OK!
 switch_statement		- OK!
-testing_expression
-try_statement
-type
-type_declaration
-type_specifier
-variable_declaration
-variable_declarator
-variable_initializer
+testing_expression		- OK!
+try_statement			- OK!
+type					- OK!
+type_declaration		- OK!
+type_specifier			- OK!
+variable_declaration	- OK!
+variable_declarator		- OK!
+variable_initializer	- OK!
 while_statement			- OK!
 
 CHECAR O MODIFICADOR THREADSAFE

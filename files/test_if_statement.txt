@@ -1,13 +1,14 @@
 public class testeIf{
 	int x = 10; 
+	int y = 5;
 	private void met(){
-		if (true){
+		if (x > y){
 			x = 5;
 		}
-		else if(false){
+		else if(x == y){
 			x = 7;
 		}else{
-			if(false){
+			if(x > 0){
 				x = 10;
 			}else{
 				x = 3;

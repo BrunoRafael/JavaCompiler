@@ -57,6 +57,11 @@ public class TesteGeral implements interfaceCriada{
             System.out.printf("Você digitou uma operação inválida.");        
     }
   }
+  
+	public synchronized void log1(String msg1, String msg2){
+       System.out.print(msg1);
+       System.out.print(msg2);
+  }
 
   public static void main(String args[]) { 
     double x;

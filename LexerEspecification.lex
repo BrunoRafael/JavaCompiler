@@ -1,5 +1,6 @@
 package scanner;
 
+import java.io.IOException;
 import java_cup.runtime.*;
 import parser.Sym;
 
@@ -18,7 +19,7 @@ import parser.Sym;
   StringBuilder string = new StringBuilder();
   
   private Symbol symbol(int type) {
-    return new Symbol(type, yyline+1, yycolumn+1);
+    return new Symbol(type, yyline+1, yycolumn+1, yytext());
   }
 
   private Symbol symbol(int type, Object value) {
@@ -60,7 +61,7 @@ EndOfLineComment = "//" {InputCharacter}* {LineTerminator}?
 DocumentationComment = "/*" "*"+ [^/*] ~"*/"
 
 /* identifiers */
-Identifier = [:jletter:][:jletterdigit:]*
+Identifier = [a-zA-Z_][a-zA-Z_0-9]*
 
 /* integer literals */
 DecIntegerLiteral = 0 | [1-9][0-9]*
@@ -138,8 +139,6 @@ SingleCharacter = [^\r\n\'\\]
   "throw"                        { return symbol(THROW); }
   "throws"                       { return symbol(THROWS); }
   "try"                          { return symbol(TRY); }
-  "volatile"                     { return symbol(VOLATILE); }
-  "strictfp"                     { return symbol(STRICTFP); }
   
   /* boolean literals */
   "true"                         { return symbol(BOOLEAN_LITERAL, true); }
@@ -231,7 +230,7 @@ SingleCharacter = [^\r\n\'\\]
   {WhiteSpace}                   { /* ignore */ }
 
   /* identifiers */ 
-  {Identifier}                   { return symbol(IDENTIFIER, yytext()); }  
+  {Identifier}                   { return symbol(IDENTIFIER, yytext()); } 
 }
 
 <STRING> {
@@ -279,5 +278,5 @@ SingleCharacter = [^\r\n\'\\]
 }
 
 /* error fallback */
-.|\n                             { throw new RuntimeException("Syntax error \" "+yytext() + "\" at line "+yyline+", column "+yycolumn); }
+.|\n                             { throw new Error(" Nao permitido <"+yytext()+">; line: " + yyline + " column: " + yycolumn); }
 <<EOF>>                          { return symbol(EOF); }

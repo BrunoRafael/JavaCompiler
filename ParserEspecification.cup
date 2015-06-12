@@ -1,6 +1,25 @@
 package parser;
 
 import java_cup.runtime.*;
+
+parser code  {: 
+  public void report_error(String message, Object info) {
+    StringBuilder m = new StringBuilder("At ");
+	
+    if (info instanceof java_cup.runtime.Symbol){
+      Symbol s = (Symbol)info;
+      m.append("column : " + s.right);
+      m.append("; line : " + s.left);
+      m.append("; Actual read lexeme : " + s.value);
+    }
+    System.out.println(m);
+  }
+   
+  public void report_fatal_error(String message, Object info) {
+    //report_error(message, info);
+    throw new RuntimeException("Syntax Error");
+  }
+:};
  
 terminal BOOLEAN; // primitive_type
 terminal BYTE, SHORT, INT, LONG, CHAR; // integral_type
@@ -99,7 +118,7 @@ non terminal variable_declarator_id, variable_initializer;
 non terminal method_declaration, method_header, method_declarator;
 non terminal formal_parameter_list_opt, formal_parameter_list;
 non terminal formal_parameter;
-non terminal throws_opt, throws;
+non terminal throws_optional, throws;
 non terminal class_type_list, method_body;
 // 19.8.4) Static Initializers
 non terminal static_initializer;
@@ -260,7 +279,7 @@ variable_initializer ::= expression | array_initializer;
 
 // 19.8.3) Method Declarations
 method_declaration ::=	method_header method_body;
-method_header ::= modifiers_opt type method_declarator throws_opt |	modifiers_opt VOID method_declarator throws_opt;
+method_header ::= modifiers_opt type method_declarator throws_optional |	modifiers_opt VOID method_declarator throws_optional;
 method_declarator ::= IDENTIFIER LPAREN formal_parameter_list_opt RPAREN | method_declarator LBRACK RBRACK; // deprecated
 	// be careful; the above production also allows 'void foo() []'
 
@@ -270,14 +289,9 @@ formal_parameter ::=
 		type variable_declarator_id
 	|	FINAL type variable_declarator_id
 	;
-throws_opt ::=	
-	|	throws
-	;
-throws ::=	THROWS class_type_list
-	;
-class_type_list ::=
-		class_type
-	|	class_type_list COMMA class_type
+throws_optional ::=	|	throws	;
+throws ::=	THROWS class_type_list;
+class_type_list ::=	class_type |	class_type_list COMMA class_type
 	;
 method_body ::=	block |	SEMICOLON;
 
@@ -285,7 +299,7 @@ method_body ::=	block |	SEMICOLON;
 static_initializer ::= STATIC block;
 
 // 19.8.5) Constructor Declarations
-constructor_declaration ::= modifiers_opt constructor_declarator throws_opt constructor_body;
+constructor_declaration ::= modifiers_opt constructor_declarator throws_optional constructor_body;
 			
 constructor_declarator ::= simple_name LPAREN formal_parameter_list_opt RPAREN;
 constructor_body ::=

@@ -20,7 +20,7 @@ parser code  {:
     throw new RuntimeException("Syntax Error");
   }
 :};
- 
+ //terminals 
 terminal BOOLEAN; // primitive_type
 terminal BYTE, SHORT, INT, LONG, CHAR; // integral_type
 terminal FLOAT, DOUBLE; // floating_point_type

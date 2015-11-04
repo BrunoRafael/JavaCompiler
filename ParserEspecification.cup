@@ -1,126 +1,72 @@
-import java_cup.runtime.*;
-import java.io.*;
-import java.util.*;
-import symtab.*;
-import type.*;
+package parser;
 
-/* MiniJava  parser for CUP.  
- * Copyright (C) 2006 Silvano Rivoira <silvano.rivoira@polito.it>
- * This program is released under the terms of the GPL; see the file
- * COPYING for more details.  There is NO WARRANTY on this code.
- */
+import java_cup.runtime.*;
 
 parser code  {: 
-
-  public static Scanner s;
-  public static int errors = 0;
-  public static int warnings = 0;
-  public static boolean first = true, second = false;
-
-  public static void main(String argv[]) {
-
-    for (int i = 0; i < argv.length; i++) {
-      try {
-        System.out.println("\n...Creating Symbol-Table for ["+argv[i]+"]...\n");
-	  s = new Scanner(new FileReader(argv[i]));
-        mjavac p = new mjavac(s);
-        p.parse();
-        System.out.println("Number of errors = " + errors + ".");
-        System.out.println("Number of warnings = " + warnings + ".");
-	  Type.printTypes();
-	  first = false;
-	  second = true;
-        System.out.println("\n...Generating intermediate code for ["+argv[i]+"]...\n");
-        s = new Scanner(new FileReader(argv[i]));
-	  p = new mjavac(s);
-        p.parse();
-        System.out.println("Number of errors = " + errors + ".");
-        System.out.println("Number of warnings = " + warnings + ".");
-	  Type.printTypes();
-      }
-      catch (Exception e) {
-        e.printStackTrace(System.out);
-        System.exit(1);
-      }
-    }
-  }
-  
   public void report_error(String message, Object info) {
-    if (info instanceof String){
-	errors++; 
-      System.err.println("  "+ errors + "==> " + info + " "+ message + 
-					"\n       Parsing resumed from 2nd token before" + s.current_lexeme()+"\n");
+    StringBuilder m = new StringBuilder("At ");
+	
+    if (info instanceof java_cup.runtime.Symbol){
+      Symbol s = (Symbol)info;
+      m.append("column : " + s.right);
+      m.append("; line : " + s.left);
+      m.append("; Actual read lexeme : " + s.value);
     }
-    else {
-    	StringBuffer m = new StringBuffer("Error ");
-    	if (info instanceof java_cup.runtime.Symbol) 
-     	   m.append( "("+info.toString()+")" );     
-    	m.append(" : "+message);   
-    	System.err.println(m);
-    }
+    System.out.println(m);
   }
-
-  public void sem_error(String lexeme, String message) {
-	errors++;
-     	System.err.println("Error "+ s.current_lexeme() + " : Semantic error");
-      System.err.println("  "+ errors + "==> " + message + ": "+ lexeme + "\n");
-  }
-
-  public void warning(String lexeme, String message) {
-	warnings++;
-     	System.err.println("Warning "+ s.current_lexeme());
-      System.err.println("  "+ warnings + "==> " + message + ": "+ lexeme + "\n");
-  } 
-  
+   
   public void report_fatal_error(String message, Object info) {
-    	report_error(message, info);
-    	throw new RuntimeException("Fatal Syntax Error");
+    //report_error(message, info);
+    throw new RuntimeException("Syntax Error");
   }
 :};
-
-action code {:
-	class Sname {
-	  public String name;
-	  public Symb cs;
-	  public Symb rs;
-
-	  Sname(String n, Symb c, Symb r) {
-		name = n;
-		cs = c;
-		rs = r;
-	  }
-	}
-
-:};
-
-init with {:
-	if(first) {	Type.initTypes();
-			Env.initFirst();
-	}
-	if(second) Env.initSecond();
-:};
-
+ //terminals 
 terminal BOOLEAN; // primitive_type
-terminal INT, CHAR, FLOAT; // numeric_type
+terminal BYTE, SHORT, INT, LONG, CHAR; // integral_type
+terminal FLOAT, DOUBLE; // floating_point_type
 terminal LBRACK, RBRACK; // array_type
-terminal DOT; // qualified_name
-terminal SEMICOLON, MULT, COMMA, LBRACE, RBRACE, EQ, LPAREN, RPAREN, COLON;
-terminal PUBLIC; // modifier
+terminal DOT; // qualified_name (.)
+terminal SEMICOLON, MULT, COMMA, LBRACE, RBRACE, EQ, LPAREN, RPAREN, COLON; // ; * , { } = ( ) :
+terminal PACKAGE; // package_declaration
+terminal IMPORT; // import_declaration
+terminal PUBLIC, PROTECTED, PRIVATE; // modifier
+terminal STATIC; // modifier
+terminal ABSTRACT, FINAL, NATIVE, SYNCHRONIZED, TRANSIENT, VOLATILE;
 terminal CLASS; // class_declaration
 terminal EXTENDS; // super
+terminal IMPLEMENTS; // interfaces
 terminal VOID; // method_header
+terminal THROWS; // throws
 terminal THIS, SUPER; // explicit_constructor_invocation
-terminal AT; // reference operator
+terminal INTERFACE; // interface_declaration
 terminal IF, ELSE; // if_then_statement, if_then_else_statement
-terminal WHILE; // while_statement, do_statement
+terminal SWITCH; // switch_statement
+terminal CASE, DEFAULT; // switch_label
+terminal DO, WHILE; // while_statement, do_statement
+terminal FOR; // for_statement
+terminal BREAK; // break_statement
+terminal CONTINUE; // continue_statement
 terminal RETURN; // return_statement
+terminal THROW; // throw_statement
+terminal TRY; // try_statement
+terminal CATCH; // catch_clause
+terminal FINALLY; // finally
 terminal NEW; // class_instance_creation_expression
-terminal PLUS, MINUS, NOT, DIV, MOD;
-terminal LT, GT, LTEQ, GTEQ; // relational_expression
-terminal EQEQ, NOTEQ; // equality_expression
+terminal PLUSPLUS; // postincrement_expression
+terminal MINUSMINUS; // postdecrement_expression
+terminal PLUS, MINUS, COMP, NOT, DIV, MOD;
+terminal LSHIFT, RSHIFT, URSHIFT; // shift_expression
+terminal LT, GT, LTEQ, GTEQ, INSTANCEOF; // relational_expression < > <= >=
+terminal EQEQ, NOTEQ; // equality_expression == !=
+terminal AND; // and_expression
+terminal XOR; // exclusive_or_expression
+terminal OR;  // inclusive_or_expression
 terminal ANDAND; // conditional_and_expression
 terminal OROR; // conditional_or_expression
 terminal QUESTION; // conditional_expression
+terminal MULTEQ, DIVEQ, MODEQ, PLUSEQ, MINUSEQ; // assignment_operator
+terminal LSHIFTEQ, RSHIFTEQ, URSHIFTEQ; // assignment_operator
+terminal ANDEQ, XOREQ, OREQ; // assignment_operator
 
 terminal java.lang.Number INTEGER_LITERAL;
 terminal java.lang.Number FLOATING_POINT_LITERAL;
@@ -130,430 +76,238 @@ terminal java.lang.String STRING_LITERAL;
 terminal java.lang.String IDENTIFIER; // name
 terminal NULL_LITERAL;
 
+// strictfp keyword, new in Java 1.2
+terminal STRICTFP;
 
-// 1) The Syntactic Grammar
-non terminal goal;
+/*NON TERMINALS*/
 
-// 2) Lexical Structure
-non terminal Type literal;
-
-// 3) Types, Values, and Variables
-non terminal Type type, primitive_type, numeric_type;
-non terminal Type reference_type;
-non terminal Type array_type;
-
-// 4) Names
-non terminal Sname name;
-non terminal Type M1;
-
-// 5) Classes
-non terminal class_declarations;
-
-// 5.1) Class Declaration
-non terminal class_declaration;
-non terminal class_body, class_body_opt;
-non terminal Boolean modifiers_opt;
+// 19.2) The Syntactic Grammar
+non terminal javaGrammar;
+// 19.3) Lexical Structure
+non terminal literal;
+// 19.4) Types, Values, and Variables
+non terminal type, primitive_type, numeric_type;
+non terminal integral_type, floating_point_type;
+non terminal reference_type;
+non terminal class_or_interface_type;
+non terminal class_type, interface_type;
+non terminal array_type;
+// 19.5) Names
+non terminal name, simple_name, qualified_name;
+// 19.6) Packages
+non terminal compilation_unit;
+non terminal package_declaration_opt, package_declaration;
+non terminal import_declarations_opt, import_declarations;
+non terminal type_declarations_opt, type_declarations;
+non terminal import_declaration;
+non terminal single_type_import_declaration;
+non terminal type_import_on_demand_declaration;
+non terminal type_declaration;
+// 19.7) Productions used only in the LALR(1) grammar
+non terminal modifiers_opt, modifiers, modifier;
+// 19.8.1) Class Declaration
+non terminal class_declaration, super_cl, super_opt;
+non terminal interfaces, interfaces_opt, interface_type_list;
+non terminal class_body;
 non terminal class_body_declarations, class_body_declarations_opt;
 non terminal class_body_declaration, class_member_declaration;
-
-// 5.2) Field Declarations
-non terminal field_declaration, variable_declarators;
-non terminal variable_declarator_id;
-
-// 5.3) Method Declarations
-non terminal method_declaration, method_header;
-non terminal Type formal_parameter_list_opt, formal_parameter_list;
-non terminal Type formal_parameter;
-non terminal method_body;
-
-// 5.4) Constructor Declarations
+// 19.8.2) Field Declarations
+non terminal field_declaration, variable_declarators, variable_declarator;
+non terminal variable_declarator_id, variable_initializer;
+// 19.8.3) Method Declarations
+non terminal method_declaration, method_header, method_declarator;
+non terminal formal_parameter_list_opt, formal_parameter_list;
+non terminal formal_parameter;
+non terminal throws_optional, throws;
+non terminal class_type_list, method_body;
+// 19.8.4) Static Initializers
+non terminal static_initializer;
+// 19.8.5) Constructor Declarations
 non terminal constructor_declaration, constructor_declarator;
 non terminal constructor_body;
 non terminal explicit_constructor_invocation;
-
-// 6) Blocks and Statements
+// 19.9.1) Interface Declarations
+non terminal interface_declaration;
+non terminal extends_interfaces_opt, extends_interfaces;
+non terminal interface_body;
+non terminal interface_member_declarations_opt, interface_member_declarations;
+non terminal interface_member_declaration, constant_declaration;
+non terminal abstract_method_declaration;
+// 19.10) Arrays
+non terminal array_initializer;
+non terminal variable_initializers;
+// 19.11) Blocks and Statements
 non terminal block;
 non terminal block_statements_opt, block_statements, block_statement;
-non terminal local_variable_declaration_statement;
+non terminal local_variable_declaration_statement, local_variable_declaration;
 non terminal statement, statement_no_short_if;
 non terminal statement_without_trailing_substatement;
 non terminal empty_statement;
+non terminal labeled_statement, labeled_statement_no_short_if;
 non terminal expression_statement, statement_expression;
 non terminal if_then_statement;
 non terminal if_then_else_statement, if_then_else_statement_no_short_if;
+non terminal switch_statement, switch_block;
+non terminal switch_block_statement_groups;
+non terminal switch_block_statement_group;
+non terminal switch_labels, switch_label;
 non terminal while_statement, while_statement_no_short_if;
-non terminal return_statement;
+non terminal do_statement;
+non terminal for_statement, for_statement_no_short_if;
+non terminal for_init_opt, for_init;
+non terminal for_update_opt, for_update;
+non terminal statement_expression_list;
+non terminal identifier_opt;
+non terminal break_statement, continue_statement;
+non terminal return_statement, throw_statement;
+non terminal synchronized_statement, try_statement;
+non terminal catches_opt, catches, catch_clause;
+non terminal finally;
+// 19.12) Expressions
+non terminal primary, primary_no_new_array;
+non terminal class_instance_creation_expression;
+non terminal argument_list_opt, argument_list;
+non terminal array_creation_expression;
+non terminal dim_exprs, dim_expr, dims_opt, dims;
+non terminal field_access, method_invocation, array_access;
+non terminal postfix_expression;
+non terminal postincrement_expression, postdecrement_expression;
+non terminal unary_expression, unary_expression_not_plus_minus;
+non terminal preincrement_expression, predecrement_expression;
+non terminal casting_expression;
+non terminal multiplicative_expression, additive_expression;
+non terminal shift_expression, relational_expression, equality_expression;
+non terminal and_expression, exclusive_or_expression, inclusive_or_expression;
+non terminal conditional_and_expression, conditional_or_expression;
+non terminal conditional_expression, assignment_expression;
+non terminal assignment;
+non terminal left_hand_side;
+non terminal assignment_operator;
+non terminal expression_opt, expression;
+non terminal constant_expression;
 
-// 7) Expressions
-non terminal Type primary, primary_no_new_array;
-non terminal Type class_instance_creation_expression;
-non terminal Type argument_list_opt, argument_list;
-non terminal Type array_creation_expression;
-non terminal Type dim_exprs, dim_expr, dims_opt;
-non terminal dims;
-non terminal Type field_access, method_invocation, array_access;
-non terminal Type postfix_expression;
-non terminal Type unary_expression;
-non terminal Type multiplicative_expression, additive_expression;
-non terminal Type relational_expression, equality_expression;
-non terminal Type conditional_and_expression, conditional_or_expression;
-non terminal Type conditional_expression, assignment_expression;
-non terminal Type assignment;
-non terminal Type left_hand_side;
-non terminal Type expression_opt, expression;
+start with javaGrammar;
 
+// The Syntactic Grammar
+javaGrammar ::=	compilation_unit;
 
-start with goal;
+// Lexical Structure.
+literal ::=	INTEGER_LITERAL |FLOATING_POINT_LITERAL | BOOLEAN_LITERAL |	CHARACTER_LITERAL |	STRING_LITERAL | NULL_LITERAL;
 
-// 1) The Syntactic Grammar
-goal ::=
-		class_declarations
- 			{: Hashtable forwards;
-			   if(parser.first) { forwards = Name.ForwardHashtable();
-						    int err = forwards.size();
-						    if(err > 0) { parser.errors = parser.errors + err;
-     						    	     		System.err.println("Error : Semantic error");
-      					    	     		System.err.println("  ==> CANNOT FIND CLASSES ("+err+"): "+forwards+"\n");
-						    }
-			   }
-			:}
-	;
+//Types, Values, and Variables
+type ::=	primitive_type | reference_type;
+primitive_type ::=	numeric_type |	BOOLEAN;
+numeric_type::=	integral_type |	floating_point_type;
+integral_type ::= BYTE | SHORT | INT | LONG | CHAR;
+floating_point_type ::= FLOAT |	DOUBLE;
 
-// 2) Lexical Structure.
-literal ::=
-		INTEGER_LITERAL 
-			{: RESULT = Type.integer(); :}
-	|	FLOATING_POINT_LITERAL
-			{: RESULT = Type.floating(); :}
-	|	BOOLEAN_LITERAL 
-			{: RESULT = Type.bool(); :}
-	|	CHARACTER_LITERAL 
-			{: RESULT = Type.character(); :}
-	|	STRING_LITERAL 
-			{: Symb s = Env.get("String", Env.getRoot()); 
-			   if(s == null) RESULT = Type.reference(Type.forwardName("String", parser.s.current_lexeme())); 
-			   else RESULT = Type.reference(s.getType());
-			:}
-	|	NULL_LITERAL 
-			{: RESULT = Type.reference(Type.voidtype()); :}
-	;
+reference_type ::= class_or_interface_type | array_type;
+class_or_interface_type ::= name;
+class_type ::=	class_or_interface_type;
+interface_type ::= class_or_interface_type;		
 
-// 3) Types, Values, and Variables
-type	::=
-		primitive_type:t
-			{: RESULT = t; :}
-	|	reference_type:t
-			{: RESULT = t; :}
-	;
-primitive_type ::=
-		numeric_type:t
-			{: RESULT = t; :}
-	|	BOOLEAN
-			{: RESULT = Type.bool(); :}
-	;
-numeric_type ::= 
-		INT
- 			{: RESULT = Type.integer(); :}
-	|	CHAR
- 			{: RESULT = Type.character(); :}
-	|	FLOAT
-  			{: RESULT = Type.floating(); :}
-	;
-reference_type ::=
-		name:sn
-			{: Symb s = sn.rs; 
-			   if(s == null) RESULT = Type.reference(Type.forwardName(sn.name, parser.s.current_lexeme())); 
-			   else RESULT = Type.reference(s.getType());
-			:}
-	|	array_type:t
-			{: RESULT = Type.reference(t); :}
-	;
-array_type ::=
-		primitive_type:t dims
-			{: RESULT = Type.array(0, t); :}
-	|	name:sn dims
-			{: Symb s = sn.cs; 
-			   if(s == null) { parser.sem_error(sn.name,"UNKNOWN NAME");
-				    		 RESULT = Type.errortype();
-			   } 
-			   else RESULT = Type.array(0, s.getType());
-			:}
-	;
+array_type ::=	primitive_type dims | name dims;
 
-// 4) Names
-name	::=
-		IDENTIFIER:n
-			{: if(parser.first) RESULT = new Sname(n, Env.get(n), Env.get(n, Env.getRoot())); 
-			   if(parser.second) RESULT = new Sname(n, Env.get(n), Env.get(n, Env.getRoot()));
-			:}			
-		|	name:sn DOT IDENTIFIER:n
-			{: Symb s1 = sn.cs;
-			   if(s1 == null) { parser.sem_error(sn.name, "UNKNOWN NAME");
-						  RESULT = new Sname(n, null, null);
-			   }
-			   else { Type t1 = s1.getType();
-				    if(!t1.isReference()) { parser.sem_error(""+t1, "NOT A REFERENCE");
-								    RESULT = new Sname(n, null, null);
-				    }
-				    else { Type r = ((Reference)t1).getReferred();
-					     if(!r.isName()) { parser.sem_error(""+r, "NOT A CLASS");
-								     RESULT = new Sname(n, null, null);
-					     }
-					     else { Symb s2 = Env.get(n, ((Name)r).getEnv()); 
-			   			     	if(s2 == null) { parser.sem_error(n,"UNKNOWN NAME"); 
-									     RESULT = new Sname(n, null, null);
-							}
-			   			     	else if (!s2.isPublic() && !Name.getCurrentClass().isSubclass(s2.getOwner())) { parser.sem_error(n, "ILLEGAL ACCESS TO PRIVATE ATTRIBUTE");
-				    					 				     			     	      		  RESULT = new Sname(n, null, null);
-						  	     }
-						  	     else RESULT = new Sname(n, s2, Env.get(n, Env.getRoot()));
-					     }								
-				    }
-			   }
-			:}	
-	;
+// 19.5) Names
+name ::= simple_name | qualified_name;
+simple_name ::=	IDENTIFIER;
+qualified_name ::=	name DOT IDENTIFIER;
 
-modifiers_opt::=
-			{: RESULT = Boolean.valueOf(false); :}
-	|	PUBLIC
-			{: RESULT = Boolean.valueOf(true); :}
-	;
+// 19.6) Packages
+compilation_unit ::= package_declaration_opt import_declarations_opt type_declarations_opt;
 
-// 5) Classes
-class_declarations ::= 
-	|	class_declarations class_declaration 
-	|	error
-			{: parser.report_error("class_declaration","WRONG"); :}
-		class_declaration
-	;
+package_declaration_opt ::= package_declaration | ;
+import_declarations_opt ::= import_declarations | ;
+type_declarations_opt   ::= type_declarations   | ;
 
-// 5.1) Class Declaration
-class_declaration ::= 
-		modifiers_opt:m CLASS IDENTIFIER:n1 
-			{: System.out.println("CLASS ENTRY: "+n1);
-			   if(parser.first) if (Env.putClass(n1, m.booleanValue()) != 0) parser.sem_error(n1,"DUPLICATE CLASS NAME");
- 			   if(parser.second) { Env.next();
-						     Name c = (Env.get(n1)).getOwner();
-						     Name.putCurrentClass(c);
-			   } 
-			:}
-		class_body
-			{: System.out.println("CLASS EXIT: "+n1);
-			   if(parser.first) Env.pop();
-			   if(parser.second) Env.next();
-			:}
-	|	modifiers_opt:m CLASS IDENTIFIER:n1 EXTENDS IDENTIFIER:n2
-			{: if(parser.first) switch (Env.putClass(n1, m.booleanValue(),n2)){ case 1: parser.sem_error(n1,"DUPLICATE CLASS NAME");
-							     								    break;
-													        case 2: parser.sem_error(n2,"UNKNOWN CLASS");
-					        }
-  			   if(parser.second) { Env.next();
-						     Env.next();
-						     Name c = (Env.get(n1)).getOwner();
-						     Name.putCurrentClass(c);
-			   }
-			:}
-		class_body:w
-			{: if(parser.first) { Env.pop();
-						    Env.pop();
-			   }
-			   if(parser.second) { Env.next();
-						     Env.next();
-			   }
-			:}
+import_declarations ::= import_declaration | import_declarations import_declaration;
+type_declarations ::= type_declaration | type_declarations type_declaration;
+package_declaration ::= PACKAGE name SEMICOLON;
+import_declaration ::= 	single_type_import_declaration | type_import_on_demand_declaration;
+single_type_import_declaration ::= IMPORT name SEMICOLON;
+type_import_on_demand_declaration ::= IMPORT name DOT MULT SEMICOLON;
+type_declaration ::= class_declaration | interface_declaration | SEMICOLON;
+
+// 19.7) Productions used only in the LALR(1) grammar
+modifiers_opt::= | modifiers
 	;
-class_body ::=
-		LBRACE class_body_declarations_opt RBRACE
+modifiers ::= 	modifier |	modifiers modifier;
+modifier ::=	PUBLIC | PROTECTED | PRIVATE |	STATIC
+	|	ABSTRACT | FINAL | NATIVE | SYNCHRONIZED | TRANSIENT | VOLATILE
+	|	STRICTFP ; // note that semantic analysis must check that the
+	                 // context of the modifier allows strictfp.
+
+// 19.8) Classes
+
+// 19.8.1) Class Declaration:
+class_declaration ::= modifiers_opt CLASS IDENTIFIER super_opt interfaces_opt class_body;
+super_cl ::=	EXTENDS class_type;
+super_opt ::=	super_cl | ;
+interfaces ::=	IMPLEMENTS interface_type_list;
+interfaces_opt::= |	interfaces ;
+interface_type_list ::=  interface_type | interface_type_list COMMA interface_type;
+class_body ::=	LBRACE class_body_declarations_opt RBRACE 
 	;
-class_body_declarations_opt ::= 
-	|	class_body_declarations
-	;
-class_body_declarations ::= 
-		class_body_declaration
-	|	class_body_declarations class_body_declaration
-	;
+class_body_declarations_opt ::= class_body_declarations | ;
+class_body_declarations ::= class_body_declaration | class_body_declarations class_body_declaration;
 class_body_declaration ::=
 		class_member_declaration
+	|	static_initializer
 	|	constructor_declaration
 	|	block
 	;
 class_member_declaration ::=
 		field_declaration
 	|	method_declaration
-  	| 	SEMICOLON
+	/* repeat the prod for 'class_declaration' here: */
+	|	modifiers_opt CLASS IDENTIFIER super_opt interfaces_opt class_body
+	|	interface_declaration
+  | SEMICOLON
 	;
 
-// 5.2) Field Declarations
+// 19.8.2) Field Declarations
 field_declaration ::= 
 		modifiers_opt type variable_declarators SEMICOLON
-	|	modifiers_opt type error 
-			{: parser.report_error("variable_declarators","WRONG"); :}
-		SEMICOLON 
-	|	modifiers_opt type error 
-			{: parser.report_error("field_declaration","WRONG"); :} 
-		method_declaration 
 	;
 variable_declarators ::=
-		variable_declarator_id
-	|	variable_declarators COMMA M1 variable_declarator_id
-	|	error 
-			{: parser.report_error("variable_declarator_id","WRONG"); :} 
-		COMMA variable_declarator_id
+		variable_declarator
+	|	variable_declarators COMMA variable_declarator
 	;
-M1 ::=
-			{: RESULT = (Type)((java_cup.runtime.Symbol)CUP$mjavac$stack.elementAt(CUP$mjavac$top-2)).value; :}
-	;
-variable_declarator_id ::=
-		IDENTIFIER:n
-			{: if(parser.first) { Boolean m = (Boolean)((java_cup.runtime.Symbol)CUP$mjavac$stack.elementAt(CUP$mjavac$top-2)).value;
-			   			    boolean mod = m == null ? false: m.booleanValue();	
-			  			    Type t = (Type)((java_cup.runtime.Symbol)CUP$mjavac$stack.elementAt(CUP$mjavac$top-1)).value;
-			   			    Name c = Name.getCurrentClass();
-			   			    String cname = c.getName();
-			   			    Symb csymb = Env.get(cname);
-			   			    Symb s;
-			   			    if(csymb.isPublic()) s = new Symb(t, c, mod);
-			   			    else { if(mod) parser.warning(n, "PUBLIC FIELD DECLARED IN PRIVATE CLASS");
-				    			     s = new Symb(t, c, false);
-			   			    }
-			   			    if (!Env.putVar(n, s)) parser.sem_error(n,"DUPLICATE NAME");
-			   }
-			:}
-	|	variable_declarator_id LBRACK RBRACK
-	;
+variable_declarator ::=variable_declarator_id |	variable_declarator_id EQ variable_initializer;
+variable_declarator_id ::=IDENTIFIER |	variable_declarator_id LBRACK RBRACK;
+variable_initializer ::= expression | array_initializer;
 
-// 5.3) Method Declarations
-method_declaration ::=
-		method_header method_body
-	;
-method_header ::=
-		modifiers_opt:m type:t1 IDENTIFIER:n 
- 			{: if(parser.first) { if (!Env.put(n, null)) parser.sem_error(n,"DUPLICATE NAME");
-						    System.out.println(" METHOD ENTRY: "+n);
-		 			          Env.push();
-			   }
-			   if(parser.second) { System.out.println(" METHOD ENTRY: "+n);
-						     Env.next();
-			   }
-			:}
-		LPAREN formal_parameter_list_opt:t2 RPAREN
-			{: if(parser.first) { Name c = Name.getCurrentClass();
-			   			    String cname = c.getName();
-			   			    Symb csymb = Env.get(cname);
-			   			    Symb s;
-			   			    if(csymb.isPublic()) s = new Symb(Type.method(t2, t1), c, m.booleanValue());
-			   			    else { if(m.booleanValue()) parser.warning(n, "PUBLIC METHOD DECLARED IN PRIVATE CLASS");
-				    		           s = new Symb(Type.method(t2, t1), c, false);
-			   			    }
-			   			    Env.putSymb(n, s); 
-			   }
-			   if(parser.second) { Symb msymb = Env.get(n);
-						     Method.putCurrent(n, (Method)msymb.getType());						     
-			   }
-			:}
-	|	modifiers_opt:m VOID IDENTIFIER:n 
-			{: if(parser.first) { if (!Env.put(n, null)) parser.sem_error(n,"DUPLICATE NAME");
-						    System.out.println(" METHOD ENTRY: "+n);
-		 				    Env.push();
-			   }
-			   if(parser.second) { System.out.println(" METHOD ENTRY: "+n);
-						     Env.next();
-			   }
-			:}
-		LPAREN formal_parameter_list_opt:t RPAREN
- 			{: if(parser.first) { Name c = Name.getCurrentClass();
-			   			    String cname = c.getName();
-			   			    Symb csymb = Env.get(cname);
-			   			    Symb s;
-			   			    if(csymb.isPublic()) s = new Symb(Type.method(t, Type.voidtype()), c, m.booleanValue());
-			   			    else { if(m.booleanValue()) parser.warning(n, "PUBLIC METHOD DECLARED IN PRIVATE CLASS");
-				    		           s = new Symb(Type.method(t, Type.voidtype()), c, false);
-			   			    }
-			   			    Env.putSymb(n, s);
-			   }
-			   if(parser.second) { Symb msymb = Env.get(n);
-						     Method.putCurrent(n, (Method)msymb.getType());						     
-			   }
-			:}
-	|	error 
-			{: parser.report_error("method_header","WRONG");
-			   Env.push();
- 			:} 
-		LPAREN formal_parameter_list_opt RPAREN
-	;
-formal_parameter_list_opt ::=
-			{: RESULT = Type.voidtype(); :}
-	|	formal_parameter_list:t
-			{: RESULT = t; :}
-	;
-formal_parameter_list ::=
-		formal_parameter:t
-			{: RESULT = t; :}
-	|	formal_parameter_list:t1 COMMA formal_parameter:t2
-			{: RESULT = Type.product(t1, t2); :}
-	|	error 
-			{: parser.report_error("formal_parameter_list","WRONG"); :} 
-		formal_parameter
-	;
+// 19.8.3) Method Declarations
+method_declaration ::=	method_header method_body;
+method_header ::= modifiers_opt type method_declarator throws_optional |	modifiers_opt VOID method_declarator throws_optional;
+method_declarator ::= IDENTIFIER LPAREN formal_parameter_list_opt RPAREN | method_declarator LBRACK RBRACK; // deprecated
+	// be careful; the above production also allows 'void foo() []'
+
+formal_parameter_list_opt ::= formal_parameter_list |;
+formal_parameter_list ::= formal_parameter | formal_parameter_list COMMA formal_parameter;
 formal_parameter ::=
-		type:t variable_declarator_id
-			{: RESULT = t; :}
+		type variable_declarator_id
+	|	FINAL type variable_declarator_id
 	;
-method_body ::=
-		LBRACE block_statements_opt RBRACE
-			{: System.out.println(" METHOD EXIT");
-			   if(parser.first) Env.pop();
-			   if(parser.second) Env.next(); 
-			:}
-	|	SEMICOLON
-			{: System.out.println(" METHOD EXIT");
-			   if(parser.first) Env.pop();
-			   if(parser.second) Env.next(); 
-			:}
+throws_optional ::=	|	throws	;
+throws ::=	THROWS class_type_list;
+class_type_list ::=	class_type |	class_type_list COMMA class_type
 	;
+method_body ::=	block |	SEMICOLON;
 
-// 5.4) Constructor Declarations
-constructor_declaration ::=
-		constructor_declarator constructor_body
-	;
-constructor_declarator ::=
-		modifiers_opt:m IDENTIFIER:n 
-			{: if(parser.first) { if (!Env.put(n, null)) parser.sem_error(n,"DUPLICATE NAME");
-						    else { Name c = Name.getCurrentClass();
-			   			    	     String cname = c.getName();
-						    	     if (!n.equals(cname)) parser.sem_error(n+", "+cname,"CONSTRUCTOR NAME DIFFERENT FROM CLASS NAME");
-						    }
-						    System.out.println(" CONSTRUCTOR ENTRY: "+n);
-		 				    Env.push();
-			   }
-			   if(parser.second) { System.out.println(" CONSTRUCTOR ENTRY: "+n);
-						     Env.next();
-			   }
-			:}
-		LPAREN formal_parameter_list_opt:t RPAREN
-			{: if(parser.first) { Name c = Name.getCurrentClass();
-			   			    String cname = c.getName();
-			   			    Symb csymb = Env.get(cname);
-			   			    Symb s;
-			   			    if(csymb.isPublic()) s = new Symb(Type.constructor(t, Type.reference(Type.getName(n))), c, m.booleanValue());
-			   			    else { if(m.booleanValue()) parser.warning(n, "PUBLIC CONSTRUCTOR DECLARED IN PRIVATE CLASS");
-				    		           s = new Symb(Type.constructor(t, Type.reference(Type.getName(n))), c, false);
-			   			    }	
-			   			    Env.putSymb(n, s);
-			   }
-			:}
-	;
+// 19.8.4) Static Initializers
+static_initializer ::= STATIC block;
+
+// 19.8.5) Constructor Declarations
+constructor_declaration ::= modifiers_opt constructor_declarator throws_optional constructor_body;
+			
+constructor_declarator ::= simple_name LPAREN formal_parameter_list_opt RPAREN;
 constructor_body ::=
-		LBRACE explicit_constructor_invocation block_statements_opt RBRACE
-			{: System.out.println(" CONSTRUCTOR EXIT");
-			   if(parser.first) Env.pop(); 
-			   if(parser.second) Env.next();
-			:}
-	|	LBRACE block_statements_opt RBRACE
-			{: System.out.println(" CONSTRUCTOR EXIT");
-			   if(parser.first) Env.pop(); 
-			   if(parser.second) Env.next();
-			:}
+		LBRACE explicit_constructor_invocation
+			block_statements RBRACE
+	|	LBRACE explicit_constructor_invocation RBRACE
+	|	LBRACE block_statements RBRACE
+	|	LBRACE RBRACE
 	;
 explicit_constructor_invocation ::=
 		THIS LPAREN argument_list_opt RPAREN SEMICOLON
@@ -562,616 +316,414 @@ explicit_constructor_invocation ::=
 	|	primary DOT SUPER LPAREN argument_list_opt RPAREN SEMICOLON
 	;
 
-// 6) Blocks and Statements
-block ::=
-		LBRACE
-  			{: System.out.println(" BLOCK ENTRY");
-			   if(parser.first) Env.push(); 
-			   if(parser.second) Env.next();
-			:}
-		block_statements_opt
-  			{: System.out.println(" BLOCK EXIT");
-			   if(parser.first) Env.pop(); 
-			   if(parser.second) Env.next();
-			:}
-		RBRACE
-//	|	LBRACE error 
-//			{: parser.report_error("block","WRONG"); :} 
-//		RBRACE 
+// 19.9) Interfaces
+
+// 19.9.1) Interface Declarations
+interface_declaration ::=
+		modifiers_opt INTERFACE IDENTIFIER extends_interfaces_opt 
+			interface_body
+	;
+extends_interfaces_opt ::=
+	|	extends_interfaces
+	;
+extends_interfaces ::=
+		EXTENDS interface_type
+	|	extends_interfaces COMMA interface_type
+	;
+interface_body ::=
+		LBRACE interface_member_declarations_opt RBRACE
+	;
+interface_member_declarations_opt ::=
+	|	interface_member_declarations
+	;
+interface_member_declarations ::=
+		interface_member_declaration
+	|	interface_member_declarations interface_member_declaration
+	;
+interface_member_declaration ::=
+		constant_declaration
+	|	abstract_method_declaration
+	|	class_declaration
+	|	interface_declaration
+  | SEMICOLON
+	;
+constant_declaration ::=
+		field_declaration
+	;
+abstract_method_declaration ::=
+		method_header SEMICOLON
+	;
+
+// 19.10) Arrays
+array_initializer ::=
+		LBRACE variable_initializers COMMA RBRACE
+	|	LBRACE variable_initializers RBRACE
+	|	LBRACE COMMA RBRACE
+	|	LBRACE RBRACE
+	;
+variable_initializers ::=
+		variable_initializer
+	|	variable_initializers COMMA variable_initializer
+	;
+
+// 19.11) Blocks and Statements
+block ::=	LBRACE block_statements_opt RBRACE
 	;
 block_statements_opt ::=
 	|	block_statements
 	;
 block_statements ::=
-		block_statement
-	|	block_statements block_statement
-	|	error 
-			{: parser.report_error("block_statements","WRONG"); :} 
-		block_statement 
-	;
+		block_statement |	block_statements block_statement;
+		
 block_statement ::=
 		local_variable_declaration_statement
 	|	statement
+	|	class_declaration
+	|	interface_declaration
 	;
+	
 local_variable_declaration_statement ::=
-		type variable_declarators SEMICOLON
-	|	type error 
-			{: parser.report_error("local_variable_declaration_statement","WRONG"); :} 
-		SEMICOLON
-	;
-statement ::=
-		statement_without_trailing_substatement
+		local_variable_declaration SEMICOLON;
+		
+local_variable_declaration ::= type variable_declarators | FINAL type variable_declarators;
+statement ::=	statement_without_trailing_substatement
+	|	labeled_statement
 	|	if_then_statement
 	|	if_then_else_statement
 	|	while_statement
+	|	for_statement
 	;
 statement_no_short_if ::=
 		statement_without_trailing_substatement
+	|	labeled_statement_no_short_if
 	|	if_then_else_statement_no_short_if
 	|	while_statement_no_short_if
+	|	for_statement_no_short_if
 	;
 statement_without_trailing_substatement ::=
 		block
 	|	empty_statement
 	|	expression_statement
+	|	switch_statement
+	|	do_statement
+	|	break_statement
+	|	continue_statement
 	|	return_statement
+	|	synchronized_statement
+	|	throw_statement
+	|	try_statement
 	;
 empty_statement ::=
 		SEMICOLON
+	;
+labeled_statement ::=
+		IDENTIFIER COLON statement
+	;
+labeled_statement_no_short_if ::=
+		IDENTIFIER COLON statement_no_short_if
 	;
 expression_statement ::=
 		statement_expression SEMICOLON
 	;
 statement_expression ::=
 		assignment
+	|	preincrement_expression
+	|	predecrement_expression
+	|	postincrement_expression
+	|	postdecrement_expression
 	|	method_invocation
 	|	class_instance_creation_expression
 	;
 if_then_statement ::=
-		IF LPAREN expression:t RPAREN statement
-			{: if(parser.second) if(!t.isBool()) parser.sem_error(""+t, "NOT A BOOLEAN");	:}
-	|	IF error 
-			{: parser.report_error("if_then_statement","WRONG"); :} 
-		RPAREN statement
+		IF LPAREN expression RPAREN statement
 	;
 if_then_else_statement ::=
-		IF LPAREN expression:t RPAREN statement_no_short_if ELSE statement
-			{: if(parser.second) if(!t.isBool()) parser.sem_error(""+t, "NOT A BOOLEAN");	:}
-	|	IF LPAREN error 
-			{: parser.report_error("expression","WRONG"); :} 
-		RPAREN statement_no_short_if ELSE statement
+		IF LPAREN expression RPAREN statement_no_short_if 
+			ELSE statement
 	;
 if_then_else_statement_no_short_if ::=
-		IF LPAREN expression:t RPAREN statement_no_short_if ELSE statement_no_short_if
-			{: if(parser.second) if(!t.isBool()) parser.sem_error(""+t, "NOT A BOOLEAN");	:}
+		IF LPAREN expression RPAREN statement_no_short_if
+			ELSE statement_no_short_if
 	;
+switch_statement ::=
+		SWITCH LPAREN expression RPAREN switch_block
+	;
+switch_block ::=
+		LBRACE switch_block_statement_groups switch_labels RBRACE
+	|	LBRACE switch_block_statement_groups RBRACE
+	|	LBRACE switch_labels RBRACE
+	|	LBRACE RBRACE
+	;
+switch_block_statement_groups ::=
+		switch_block_statement_group
+	|	switch_block_statement_groups switch_block_statement_group
+	;
+switch_block_statement_group ::=
+		switch_labels block_statements
+	;
+switch_labels ::=
+		switch_label
+	|	switch_labels switch_label
+	;
+switch_label ::=
+		CASE constant_expression COLON
+	|	DEFAULT COLON
+	;
+
 while_statement ::=
-		WHILE LPAREN expression:t RPAREN statement
-			{: if(parser.second) if(!t.isBool()) parser.sem_error(""+t, "NOT A BOOLEAN");	:}
-	|	WHILE error 
-			{: parser.report_error("expression","WRONG"); :} 
-		RPAREN statement
+		WHILE LPAREN expression RPAREN statement
 	;
 while_statement_no_short_if ::=
-		WHILE LPAREN expression:t RPAREN statement_no_short_if
-			{: if(parser.second) if(!t.isBool()) parser.sem_error(""+t, "NOT A BOOLEAN");	:}
+		WHILE LPAREN expression RPAREN statement_no_short_if
+	;
+do_statement ::=
+		DO statement WHILE LPAREN expression RPAREN SEMICOLON
+	;
+for_statement ::=
+		FOR LPAREN for_init_opt SEMICOLON expression_opt SEMICOLON
+			for_update_opt RPAREN statement
+	;
+for_statement_no_short_if ::=
+		FOR LPAREN for_init_opt SEMICOLON expression_opt SEMICOLON
+			for_update_opt RPAREN statement_no_short_if
+	;
+for_init_opt ::=
+	|	for_init
+	;
+for_init ::=	statement_expression_list
+	|	local_variable_declaration
+	;
+for_update_opt ::=
+	|	for_update
+	;
+for_update ::=	statement_expression_list
+	;
+statement_expression_list ::=
+		statement_expression
+	|	statement_expression_list COMMA statement_expression
+	;
+
+identifier_opt ::= 
+	|	IDENTIFIER
+	;
+
+break_statement ::=
+		BREAK identifier_opt SEMICOLON
+	;
+
+continue_statement ::=
+		CONTINUE identifier_opt SEMICOLON
 	;
 return_statement ::=
-		RETURN expression_opt:t SEMICOLON
-			{: if(parser.second) { Type r = Method.getCurrent().getRange();
-						    if(t != r) parser.sem_error(""+t+", "+r, "INCOMPATIBLE TYPES");
-			   }
-			:}
-      ;
+		RETURN expression_opt SEMICOLON
+	;
+throw_statement ::=
+		THROW expression SEMICOLON
+	;
+synchronized_statement ::=
+		SYNCHRONIZED LPAREN expression RPAREN block
+	;
+try_statement ::=
+		TRY block catches
+	|	TRY block catches_opt finally
+	;
+catches_opt ::=
+	|	catches
+	;
+catches ::=	catch_clause
+	|	catches catch_clause
+	;
+catch_clause ::=
+		CATCH LPAREN formal_parameter RPAREN block
+	;
+finally ::=	FINALLY block
+	;
 
-// 7) Expressions
-primary ::=	
-		primary_no_new_array:t 
-			{: RESULT = t; :}
-	|	array_creation_expression:t 
-			{: RESULT = t; :}
+// 19.12) Expressions
+primary ::=	primary_no_new_array
+	|	array_creation_expression
 	;
 primary_no_new_array ::=
-		literal:t 
-			{: RESULT = t; :} 
-	|	THIS 
-			{: RESULT = Type.reference(Name.getCurrentClass()); :}
-	|	LPAREN expression:t RPAREN 
-			{: RESULT = t; :}
-	|	class_instance_creation_expression:t 
-			{: RESULT = t; :}
-	|	field_access:t
-			{: RESULT = t; :}
-	|	method_invocation:t 
-			{: RESULT = t; :}
-	|	array_access:t 
-			{: RESULT = t; :}
+		literal
+	|	THIS
+	|	LPAREN expression RPAREN
+	|	class_instance_creation_expression
+	|	field_access
+	|	method_invocation
+	|	array_access
 	|	primitive_type DOT CLASS
 	|	VOID DOT CLASS
 	|	array_type DOT CLASS
 	|	name DOT CLASS
 	|	name DOT THIS
-	|	LPAREN error
-			{: parser.report_error("primary_no_new_array","WRONG"); :} 
-		RPAREN
-	|	error
- 			{: parser.report_error("primary_no_new_array","WRONG"); :}
-		DOT THIS 
 	;
 class_instance_creation_expression ::=
-		NEW name:sn LPAREN argument_list_opt:t2 RPAREN class_body_opt
-			{: if(parser.second) { if(sn.rs == null) { parser.sem_error(sn.name,"UNKNOWN NAME");
-				   		     			       RESULT = Type.errortype();
-			   			     }
-			   			     else { Type t = sn.rs.getType();
-				    		     		if (!t.isName()) { parser.sem_error(""+t, "NOT A CLASS");
-				    		           				 RESULT = Type.errortype();
-			   	    		     		}
-			   	    		     		else { Env e = ((Name)t).getEnv();
-			   	    	     		      Symb s1 = Env.get(sn.name, e);
-					     			Type t1 = s1.getType();
-			   	    	     			if(!t1.isConstructor()) { parser.sem_error(""+t1, "NOT A CONSTRUCTOR");
-				    			    	     		 		  RESULT = Type.errortype();
-			   	    	     			}
-			          	     			else if(((Constructor)t1).getDomain() != t2) { parser.sem_error(""+t2, "INCOMPATIBLE ARGUMENT WITH CONSTRUCTOR "+sn.name);
-				    					 				  		     RESULT = Type.errortype();
-			   	  	   	    		     }
-					   	    		     else if (!s1.isPublic() && !Name.getCurrentClass().isSubclass(sn.rs.getOwner())) { parser.sem_error(sn.name, "ILLEGAL ACCESS TO PRIVATE CONSTRUCTOR");
-				    					 				     			     	      			          RESULT = Type.errortype();
-						  	   		    }
-						  	   		    else RESULT = ((Constructor)t1).getRange();
-			 	    		     }
-			   			   }
-			   }
-			   else RESULT =Type.voidtype();
-			:}
-//	|	primary DOT NEW IDENTIFIER LPAREN argument_list_opt RPAREN class_body_opt 
+		NEW class_type LPAREN argument_list_opt RPAREN
+	|	NEW class_type LPAREN argument_list_opt RPAREN class_body
+	|	primary DOT NEW IDENTIFIER
+			LPAREN argument_list_opt RPAREN
+	|	primary DOT NEW IDENTIFIER
+			LPAREN argument_list_opt RPAREN class_body
 	;
-class_body_opt ::=
-	|	class_body
-;
 argument_list_opt ::=
-			{: RESULT = Type.voidtype(); :}
-	|	argument_list:t
-			{: RESULT = t; :}
+	|	argument_list
 	;
 argument_list ::=
-		expression:t
-			{: RESULT = t; :}
-	|	argument_list:t1 COMMA expression:t2
-			{: RESULT = Type.product(t1, t2); :}
-	|	error 
-			{: parser.report_error("argument_list","WRONG"); :} 
 		expression
+	|	argument_list COMMA expression
 	;
 array_creation_expression ::=
-		NEW primitive_type:t1 dim_exprs:t2 dims_opt
-			{: if(parser.second) if(!t2.isInteger()) { parser.sem_error(""+t2, "NOT AN INTEGER");
-				    			 			 RESULT = Type.errortype();
-		   				   }
-			   			   else RESULT = Type.reference(Type.array(0, t1));
-			   else RESULT = Type.voidtype();
-			:}
-	|	NEW name:sn dim_exprs:t2 dims_opt
-			{: if(parser.second) if(!t2.isInteger()) { parser.sem_error(""+t2, "NOT AN INTEGER");
-				    			 			 RESULT = Type.errortype();
-		   	   			   }
-			   			   else { if(sn.cs == null) { parser.sem_error(sn.name,"UNKNOWN NAME");
-				   			 			  	RESULT = Type.errortype();
-			   	    			    }
-			   	    			    else RESULT = Type.reference(Type.array(0, sn.cs.getType()));
-			   			   }
-			   else RESULT = Type.voidtype();
-			:}
+		NEW primitive_type dim_exprs dims_opt
+	|	NEW class_or_interface_type dim_exprs dims_opt
+	|	NEW primitive_type dims array_initializer
+	|	NEW class_or_interface_type dims array_initializer
 	;
-dim_exprs ::=
-		dim_expr:t
-			{: RESULT = t; :}
-	|	dim_exprs:t1 dim_expr:t2
-			{: RESULT = t1; :}
-	|	error 
-			{: parser.report_error("dim_expr","WRONG"); :} 
-		dim_expr
+dim_exprs ::=	dim_expr
+	|	dim_exprs dim_expr
 	;
-dim_expr ::=	LBRACK expression:t RBRACK
-			{: RESULT = t; :}
+dim_expr ::=	LBRACK expression RBRACK
 	;
 dims_opt ::=
 	|	dims
 	;
-dims ::=
-		LBRACK RBRACK
+dims ::=	LBRACK RBRACK
 	|	dims LBRACK RBRACK
 	;
 field_access ::=
-		primary:t DOT IDENTIFIER:n
-			{: if(parser.second) { if(!t.isReference()) { parser.sem_error(""+t, "NOT A REFERENCE");
-				    					 	    RESULT = Type.errortype();
-						     }
-				  		     else { Type r = ((Reference)t).getReferred();
-								if(!r.isName()) { parser.sem_error(""+r, "NOT A CLASS");
-				    					 	      RESULT = Type.errortype();
-						     		}
-								else { Symb s = Env.get(n, ((Name)r).getEnv()); 
-			   			     			 if(s == null){ parser.sem_error(n,"UNKNOWN NAME");
-				    	     				  		    RESULT = Type.errortype();
-			   			     			 } 
-			   			     			 else if(!s.isPublic() && !Name.getCurrentClass().isSubclass(s.getOwner())) { parser.sem_error(n, "ILLEGAL ACCESS TO PRIVATE FIELD");
-				    					 				     	     				 	     			RESULT = Type.errortype();
-						  	    			}
-				  			    			else RESULT = s.getType();
-						     		}								
-						     }
-			   }
-			   else RESULT = Type.voidtype();
-			:}
-	|	SUPER DOT IDENTIFIER:n
-			{: if(parser.second) { Name c = Name.getCurrentClass();
-						     String sn = c.getSuper();						     
- 			   			     if(sn == null){ parser.sem_error(""+c,"NOT A SUBCLASS");
-				    	     				   RESULT = Type.errortype();
-			   			     }
-						     else {	Symb ss = Env.get(sn);
-								Name sc = (Name)ss.getType();
-						    		Symb s = Env.get(n, sc.getEnv());
-			   			     		if(s == null){ parser.sem_error(n,"UNKNOWN NAME");
-				    	     				  	   RESULT = Type.errortype();
-			   			     		} 
-				  			      else RESULT = s.getType();
-						     }
-			   }
-			   else RESULT = Type.voidtype();
-			:}
-//	|	name DOT SUPER DOT IDENTIFIER
+		primary DOT IDENTIFIER
+	|	SUPER DOT IDENTIFIER
+	|	name DOT SUPER DOT IDENTIFIER
 	;
 method_invocation ::=
-		name:sn LPAREN argument_list_opt:t2 RPAREN
-			{: if(parser.second) { if(sn.cs == null) { parser.sem_error(sn.name,"UNKNOWN NAME");
-				   	      			   	 RESULT = Type.errortype();
-			   			     }
-			   			     else { Type t1 = sn.cs.getType();
-				    				if(!t1.isMethod()) { parser.sem_error(""+t1, "NOT A METHOD");
-				    		             			   RESULT = Type.errortype();
-			   	    				}
-			   	    				else if(sn.name.equals("printf")||sn.name.equals("scanf")) RESULT = Type.integer();										  	 						 
-								     else if(((Method)t1).getDomain() != t2) { parser.sem_error(""+t2, "INCOMPATIBLE ARGUMENT WITH METHOD "+sn.name);
-				    					 		  			           RESULT = Type.errortype();
-			   	  	   			     	    }
-					   			     	    else RESULT = ((Method)t1).getRange();
-			   			     }
-			   }
-			   else RESULT = Type.voidtype();
-			:}
-	|	primary:t1 DOT IDENTIFIER:n LPAREN argument_list_opt:t2 RPAREN
-			{: if(parser.second) if(!t1.isReference()) { parser.sem_error(""+t1, "NOT A REFERENCE");
-				    		 	   			   RESULT = Type.errortype();
-			   			   }
-			   			   else{ Type name = ((Reference)t1).getReferred();
-			   	   			   if (!name.isName()) { parser.sem_error(""+t1, "NOT A CLASS");
-				    		       	 			 RESULT = Type.errortype();
-			   	   			   }
-			   	   			   else { Env e = ((Name)name).getEnv();  
-			   		    			    Symb s = Env.get(n, e);
-			   		    			    if(s == null) { parser.sem_error(n, "UNKNOWN NAME");
-				    		 		  			  RESULT = Type.errortype();
-			   	   	    			    }
-			   		    			    else { Type t = s.getType();
-						     			     if(!t.isMethod()) { parser.sem_error(""+t, "NOT A METHOD");
-				    			    		       			 RESULT = Type.errortype();
-			   	  		     			     }
-			        		     			     else if(((Method)t).getDomain() != t2) { parser.sem_error(""+t2, "INCOMPATIBLE ARGUMENT WITH METHOD "+n);
-				    					 							    RESULT = Type.errortype();
-			   	  	   		    			    }
-					   		    			    else if (!s.isPublic() && !Name.getCurrentClass().isSubclass(s.getOwner())) { parser.sem_error(n, "ILLEGAL ACCESS TO PRIVATE METHOD");				    					 				     			     				    			    RESULT = Type.errortype();
-						  		   			   }
-								   			   else RESULT = ((Method)t).getRange();
-					    			    }			   	  
-			   	   		   }
-			   }
-			   else RESULT = Type.voidtype();
-			:}
-	|	SUPER DOT IDENTIFIER:n LPAREN argument_list_opt:t RPAREN
-			{: RESULT = t; :}
-//	|	name DOT SUPER DOT IDENTIFIER LPAREN argument_list_opt RPAREN
+		name LPAREN argument_list_opt RPAREN
+	|	primary DOT IDENTIFIER LPAREN argument_list_opt RPAREN
+	|	SUPER DOT IDENTIFIER LPAREN argument_list_opt RPAREN
+	|	name DOT SUPER DOT IDENTIFIER LPAREN argument_list_opt RPAREN
 	;
 array_access ::=
-		name:sn LBRACK expression:t2 RBRACK
-			{: if(parser.second) { if(sn.cs == null) { parser.sem_error(sn.name,"UNKNOWN NAME");
-				   	      			   	 RESULT = Type.errortype();
-			   			     }
-			   			     else { Type t1 = sn.cs.getType();
-				    				if(!t1.isReference()) { parser.sem_error(""+t1, "NOT A REFERENCE");
-				    		 	   	    				RESULT = Type.errortype();
-			   	    				}
-			   	    				else{ Type array = ((Reference)t1).getReferred();
-			   	   	    				if (!array.isArray()) { parser.sem_error(""+array, "NOT AN ARRAY");
-				    		       	   	    				RESULT = Type.errortype();
-			   	   	    				}
-				   	    				else if(!t2.isInteger()) { parser.sem_error(""+t2, "NOT AN INTEGER");
-				    		       	   		 			   RESULT = Type.errortype();
-					  	   			     } 
-					  	   			     else RESULT = ((Array)array).getBase();
-			   	    			    }
-			   			     }
-			   }
-			   else RESULT = Type.voidtype();
-			:}
-	|	primary_no_new_array:t1 LBRACK expression:t2 RBRACK
-			{: if(!t2.isInteger()) { parser.sem_error(""+t2, "NOT AN INTEGER");
-				    		       RESULT = Type.errortype();
-			   } 
-			   else RESULT = t1;
-			:}
+		name LBRACK expression RBRACK
+	|	primary_no_new_array LBRACK expression RBRACK
 	;
 postfix_expression ::=
-		primary:t
-			{: RESULT = t; :}
-	|	name:sn
-			{: if(sn.cs == null) { parser.sem_error(sn.name,"UNKNOWN NAME");
-				   		     RESULT = Type.errortype();
-			   }
-			   else RESULT = sn.cs.getType(); 
-			:}
-	|	AT name:sn
-			{: if(sn.cs == null) { parser.sem_error(sn.name,"UNKNOWN NAME");
-				   		     RESULT = Type.errortype();
-			   }
-			   else RESULT = sn.cs.getType(); 
-			:}
+		primary
+	|	name
+	|	postincrement_expression
+	|	postdecrement_expression
+	;
+postincrement_expression ::=
+		postfix_expression PLUSPLUS
+	;
+postdecrement_expression ::=
+		postfix_expression MINUSMINUS
 	;
 unary_expression ::=
-		postfix_expression:t
-			{: RESULT = t; :}
-	|	NOT unary_expression:t
-			{: if(parser.second) if(!t.isBool()) { parser.sem_error(""+t, "NOT A BOOLEAN");
-				    		   			   RESULT = Type.errortype();
-						   }	   
-			   			   else  RESULT = t;
-						    
-			:}
-	|	PLUS unary_expression:t
-			{: if(parser.second) if(!t.isNumber()) { parser.sem_error(""+t, "NOT A NUMBER");
-				    		   			     RESULT = Type.errortype();
-						   }	   
-			   			   else  RESULT = t;
-						    
-			:}
-	|	MINUS unary_expression:t
-			{: if(parser.second) if(!t.isNumber()) { parser.sem_error(""+t, "NOT A NUMBER");
-				    		   			     RESULT = Type.errortype();
-						   }	   
-			   			   else  RESULT = t;
-						    
-			:}
+		preincrement_expression
+	|	predecrement_expression
+	|	PLUS unary_expression
+	|	MINUS unary_expression
+	|	unary_expression_not_plus_minus
+	;
+preincrement_expression ::=
+		PLUSPLUS unary_expression
+	;
+predecrement_expression ::=
+		MINUSMINUS unary_expression
+	;
+unary_expression_not_plus_minus ::=
+		postfix_expression
+	|	COMP unary_expression
+	|	NOT unary_expression
+	|	casting_expression
+	;
+casting_expression ::=
+		LPAREN primitive_type dims_opt RPAREN unary_expression
+	|	LPAREN expression RPAREN unary_expression_not_plus_minus
+	|	LPAREN name dims RPAREN unary_expression_not_plus_minus
 	;
 multiplicative_expression ::=
-		unary_expression:t
-			{: RESULT = t; :}
-	|	multiplicative_expression:t1 MULT unary_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isNumber();
-						     if(!b1) parser.sem_error(""+t1, "NOT A NUMBER");
-			   			     boolean b2 = t2.isNumber();
-						     if(!b2) parser.sem_error(""+t2, "NOT A NUMBER");
-				    		     if(b1 && b2) RESULT = Type.max(t1, t2);	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	multiplicative_expression:t1 DIV unary_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isNumber();
-						     if(!b1) parser.sem_error(""+t1, "NOT A NUMBER");
-			   			     boolean b2 = t2.isNumber();
-						     if(!b2) parser.sem_error(""+t2, "NOT A NUMBER");
-				    		     if(b1 && b2) RESULT = Type.max(t1, t2);	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	multiplicative_expression:t1 MOD unary_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isInteger();
-						     if(!b1) parser.sem_error(""+t1, "NOT AN INTEGER");
-			   			     boolean b2 = t2.isInteger();
-						     if(!b2) parser.sem_error(""+t2, "NOT AN INTEGER");
-				    		     if(b1 && b2) RESULT = t1;	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	error 
-			{: parser.report_error("multiplicative_expression","WRONG"); :} 
-		MULT unary_expression
-	|	error 
-			{: parser.report_error("multiplicative_expression","WRONG"); :} 
-		DIV unary_expression	
-	|	error 
-			{: parser.report_error("multiplicative_expression","WRONG"); :} 
-		MOD unary_expression
+		unary_expression
+	|	multiplicative_expression MULT unary_expression
+	|	multiplicative_expression DIV unary_expression
+	|	multiplicative_expression MOD unary_expression
 	;
 additive_expression ::=
-		multiplicative_expression:t
-			{: RESULT = t; :}
-	|	additive_expression:t1 PLUS multiplicative_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isNumber();
-						     if(!b1) parser.sem_error(""+t1, "NOT A NUMBER");
-			   			     boolean b2 = t2.isNumber();
-						     if(!b2) parser.sem_error(""+t2, "NOT A NUMBER");
-				    		     if(b1 && b2) RESULT = Type.max(t1, t2);	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	additive_expression:t1 MINUS multiplicative_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isNumber();
-						     if(!b1) parser.sem_error(""+t1, "NOT A NUMBER");
-			   			     boolean b2 = t2.isNumber();
-						     if(!b2) parser.sem_error(""+t2, "NOT A NUMBER");
-				    		     if(b1 && b2) RESULT = Type.max(t1, t2);	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
+		multiplicative_expression
+	|	additive_expression PLUS multiplicative_expression
+	|	additive_expression MINUS multiplicative_expression
+	;
+shift_expression ::=
+		additive_expression
+	|	shift_expression LSHIFT additive_expression
+	|	shift_expression RSHIFT additive_expression
+	|	shift_expression URSHIFT additive_expression
 	;
 relational_expression ::=
-		additive_expression:t
-			{: RESULT = t; :}
-	|	relational_expression:t1 LT additive_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isNumber();
-						     if(!b1) parser.sem_error(""+t1, "NOT A NUMBER");
-			   			     boolean b2 = t2.isNumber();
-						     if(!b2) parser.sem_error(""+t2, "NOT A NUMBER");
-				    		     if(b1 && b2) RESULT = Type.bool();	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	relational_expression:t1 GT additive_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isNumber();
-						     if(!b1) parser.sem_error(""+t1, "NOT A NUMBER");
-			   			     boolean b2 = t2.isNumber();
-						     if(!b2) parser.sem_error(""+t2, "NOT A NUMBER");
-				    		     if(b1 && b2) RESULT = Type.bool();	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	relational_expression:t1 LTEQ additive_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isNumber();
-						     if(!b1) parser.sem_error(""+t1, "NOT A NUMBER");
-			   			     boolean b2 = t2.isNumber();
-						     if(!b2) parser.sem_error(""+t2, "NOT A NUMBER");
-				    		     if(b1 && b2) RESULT = Type.bool();	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	relational_expression:t1 GTEQ additive_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isNumber();
-						     if(!b1) parser.sem_error(""+t1, "NOT A NUMBER");
-			   			     boolean b2 = t2.isNumber();
-						     if(!b2) parser.sem_error(""+t2, "NOT A NUMBER");
-				    		     if(b1 && b2) RESULT = Type.bool();	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	error 
-			{: parser.report_error("relational_expression","WRONG"); :} 
-		LT additive_expression
-	|	error 
-			{: parser.report_error("relational_expression","WRONG"); :} 
-		GT additive_expression
-	|	error 
-			{: parser.report_error("relational_expression","WRONG"); :} 
-		LTEQ additive_expression
-	|	error 
-			{: parser.report_error("relational_expression","WRONG"); :} 
-		GTEQ additive_expression
+		shift_expression
+	|	relational_expression LT shift_expression
+	|	relational_expression GT shift_expression
+	|	relational_expression LTEQ shift_expression
+	|	relational_expression GTEQ shift_expression
+	|	relational_expression INSTANCEOF reference_type
 	;
 equality_expression ::=
-		relational_expression:t
-			{: RESULT = t; :}
-	|	equality_expression:t1 EQEQ relational_expression:t2
-			{: if(parser.second) if(t1 != t2) { parser.sem_error(""+t1+", "+t2, "INCOMPATIBLE TYPES");	   
-			   			     			RESULT = Type.errortype();
-						   }
- 						   else RESULT = t1;
-			:}
-	|	equality_expression:t1 NOTEQ relational_expression:t2
-			{: if(parser.second) if(t1 != t2) { parser.sem_error(""+t1+", "+t2, "INCOMPATIBLE TYPES");	   
-			   			     			RESULT = Type.errortype();
-						   }
- 						   else RESULT = t1;
-			:}
-	|	error 
-			{: parser.report_error("equality_expression","WRONG"); :} 
-		EQEQ relational_expression
-	|	error 
-			{: parser.report_error("equality_expression","WRONG"); :} 
-		NOTEQ relational_expression
+		relational_expression
+	|	equality_expression EQEQ relational_expression
+	|	equality_expression NOTEQ relational_expression
+	;
+and_expression ::=
+		equality_expression
+	|	and_expression AND equality_expression
+	;
+exclusive_or_expression ::=
+		and_expression
+	|	exclusive_or_expression XOR and_expression
+	;
+inclusive_or_expression ::=
+		exclusive_or_expression
+	|	inclusive_or_expression OR exclusive_or_expression
 	;
 conditional_and_expression ::=
-		equality_expression:t
-			{: RESULT = t; :}
-	|	conditional_and_expression:t1 ANDAND equality_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isBool();
-						     if(!b1) parser.sem_error(""+t1, "NOT A BOOLEAN");
-			   			     boolean b2 = t2.isBool();
-						     if(!b2) parser.sem_error(""+t2, "NOT A BOOLEAN");
-				    		     if(b1 && b2) RESULT = t1;	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	error 
-			{: parser.report_error("conditional_and_expression","WRONG"); :} 
-		ANDAND equality_expression
+		inclusive_or_expression
+	|	conditional_and_expression ANDAND inclusive_or_expression
 	;
 conditional_or_expression ::=
-		conditional_and_expression:t
-			{: RESULT = t; :}
-	|	conditional_or_expression:t1 OROR conditional_and_expression:t2
-			{: if(parser.second) { boolean b1 = t1.isBool();
-						     if(!b1) parser.sem_error(""+t1, "NOT A BOOLEAN");
-			   			     boolean b2 = t2.isBool();
-						     if(!b2) parser.sem_error(""+t2, "NOT A BOOLEAN");
-				    		     if(b1 && b2) RESULT = t1;	   
-			   			     else  RESULT = Type.errortype();
-						   } 
-			:}
-	|	error 
-			{: parser.report_error("conditional_or_expression","WRONG"); :} 
-		OROR conditional_and_expression
+		conditional_and_expression
+	|	conditional_or_expression OROR conditional_and_expression
 	;
 conditional_expression ::=
-		conditional_or_expression:t
-			{: RESULT = t; :}
-	|	conditional_or_expression:t1 QUESTION expression:t2 COLON conditional_expression:t3
-			{: if(parser.second) { boolean b1 = t1.isBool();
-						     if(!b1) parser.sem_error(""+t1, "NOT A BOOLEAN");
-			   			     if(t2 != t3) if(t2.isNumber() && t3.isNumber()) RESULT = Type.max(t2, t3);
-									else { parser.sem_error(""+t2+", "+t3, "INCOMPATIBLE TYPES");
-										 RESULT = Type.errortype();
-									}
-				    		     else RESULT = t2;	   
-			   } 
-			:}
-	|	error 
-			{: parser.report_error("conditional_expression","WRONG"); :} 
-		QUESTION expression COLON conditional_or_expression
+		conditional_or_expression
+	|	conditional_or_expression QUESTION expression 
+			COLON conditional_expression
 	;
 assignment_expression ::=
-		conditional_expression:t
-			{: RESULT = t; :}
-	|	assignment:t
-			{: RESULT = t; :}
+		conditional_expression
+	|	assignment
 	;
-assignment ::=
-		left_hand_side:t1 EQ assignment_expression:t2
-			{: if(parser.second) if(t1 != t2) if(t1.isNumber() && t2.isNumber()) { Type t = Type.max(t1, t2);
-														     if(t2 != t) RESULT = t;
-														     else { parser.sem_error(""+t1+", "+t2, "LEFT-HAND TYPE SHORTER THAN RIGHT-END TYPE");
-																RESULT = Type.errortype();
-														     }
-								    }
-								    else { parser.sem_error(""+t1+", "+t2, "INCOMPATIBLE TYPES");
-				    					     RESULT = Type.errortype();
-			   			   		    }
-			   			   else RESULT = t1; 
-			   else RESULT = Type.voidtype();
-			:}
-	|	error 
-			{: parser.report_error("left_hand_side","WRONG"); :} 
-		EQ assignment_expression
+assignment ::=	left_hand_side assignment_operator assignment_expression
 	;
 left_hand_side ::=
-		name:sn
-			{: if(parser.second) { if(sn.cs == null) { parser.sem_error(sn.name,"UNKNOWN NAME");
-				   		 			   	 RESULT = Type.errortype();
-			   			     }
-			   			     else RESULT = sn.cs.getType(); 
-			   }
-			   else RESULT = Type.voidtype();
-			:}
-	|	field_access:t
-			{: RESULT = t; :}
-	|	array_access:t
-			{: RESULT = t; :}
+		name
+	|	field_access
+	|	array_access
+	;
+assignment_operator ::=
+		EQ
+	|	MULTEQ
+	|	DIVEQ
+	|	MODEQ
+	|	PLUSEQ
+	|	MINUSEQ
+	|	LSHIFTEQ
+	|	RSHIFTEQ
+	|	URSHIFTEQ
+	|	ANDEQ
+	|	XOREQ
+	|	OREQ
 	;
 expression_opt ::=
-	|	expression:t
-			{: RESULT = t; :}
+	|	expression
 	;
-expression ::=
-		assignment_expression:t
-			{: RESULT = t; :}
+expression ::=	assignment_expression;
+constant_expression ::=
+		expression
 	;

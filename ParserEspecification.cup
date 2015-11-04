@@ -2,31 +2,85 @@ package parser;
 
 import java_cup.runtime.*;
 
-parser code  {: 
-  public void report_error(String message, Object info) {
-    StringBuilder m = new StringBuilder("At ");
-	
-    if (info instanceof java_cup.runtime.Symbol){
-      Symbol s = (Symbol)info;
-      m.append("column : " + s.right);
-      m.append("; line : " + s.left);
-      m.append("; Actual read lexeme : " + s.value);
-    }
-    System.out.println(m);
+parser code {:
+  protected Lexer lexer;
+  public static int errors = 0;
+  public static int warnings = 0;
+  public static boolean first = true, second = false;
+ 
+public void report_error(String message, Object info) {
+String token = "";
+ 
+if (info instanceof java_cup.runtime.Symbol) {
+           java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+           token = s.value+"";
+ 
+       }
+       System.err.println("Erro em: " + token);
+ }
+ 
+ public void report_fatal_error(String message, Object info) {
+   report_error(message, info);
+   throw new RuntimeException("Erro Sintatico.");
+ }
+  public void sem_error(String lexeme, String message) {
+        errors++;
+        System.err.println("Error "+ lexer.current_lexeme() + " : Semantic error");
+      System.err.println("  "+ errors + "==> " + message + ": "+ lexeme + "\n");
   }
-   
-  public void report_fatal_error(String message, Object info) {
-    //report_error(message, info);
-    throw new RuntimeException("Syntax Error");
+ 
+  public void warning(String lexeme, String message) {
+        warnings++;
+        System.err.println("Warning "+ lexer.current_lexeme());
+      System.err.println("  "+ warnings + "==> " + message + ": "+ lexeme + "\n");
   }
+ 
+ 
+:}
+ 
+action code {:
+        class Sname {
+          public String name;
+          public Symb cs;
+          public Symb rs;
+ 
+          Sname(String n, Symb c, Symb r) {
+                name = n;
+                cs = c;
+                rs = r;
+          }
+        }
+ 
 :};
- //terminals 
+ 
+/* define how to connect to the scanner! */
+init with {:
+ 
+        if(first) {     Type.initTypes();
+                        Env.initFirst();
+        }
+        if(second) Env.initSecond();
+ 
+  ComplexSymbolFactory f = new ComplexSymbolFactory();
+  symbolFactory = f;
+  File file = new File(Driver.arquivo);
+  FileInputStream fis = null;
+  try {
+    fis = new FileInputStream(file);
+  } catch (IOException e) {
+    e.printStackTrace();
+  }
+  lexer = new Lexer(f,fis);
+:};
+scan with {: return lexer.next_token(); :};
+ 
+/* Terminals (tokens returned by the scanner). */
 terminal BOOLEAN; // primitive_type
 terminal BYTE, SHORT, INT, LONG, CHAR; // integral_type
 terminal FLOAT, DOUBLE; // floating_point_type
 terminal LBRACK, RBRACK; // array_type
-terminal DOT; // qualified_name (.)
-terminal SEMICOLON, MULT, COMMA, LBRACE, RBRACE, EQ, LPAREN, RPAREN, COLON; // ; * , { } = ( ) :
+terminal DOT; // qualified_name
+terminal SEMICOLON, MULT, COMMA, LBRACE, RBRACE, EQ, LPAREN, RPAREN, COLON;
 terminal PACKAGE; // package_declaration
 terminal IMPORT; // import_declaration
 terminal PUBLIC, PROTECTED, PRIVATE; // modifier
@@ -56,8 +110,8 @@ terminal PLUSPLUS; // postincrement_expression
 terminal MINUSMINUS; // postdecrement_expression
 terminal PLUS, MINUS, COMP, NOT, DIV, MOD;
 terminal LSHIFT, RSHIFT, URSHIFT; // shift_expression
-terminal LT, GT, LTEQ, GTEQ, INSTANCEOF; // relational_expression < > <= >=
-terminal EQEQ, NOTEQ; // equality_expression == !=
+terminal LT, GT, LTEQ, GTEQ, INSTANCEOF; // relational_expression
+terminal EQEQ, NOTEQ; // equality_expression
 terminal AND; // and_expression
 terminal XOR; // exclusive_or_expression
 terminal OR;  // inclusive_or_expression
@@ -79,10 +133,11 @@ terminal NULL_LITERAL;
 // strictfp keyword, new in Java 1.2
 terminal STRICTFP;
 
-/*NON TERMINALS*/
+// Reserved but unused:
+terminal CONST, GOTO;
 
 // 19.2) The Syntactic Grammar
-non terminal javaGrammar;
+non terminal goal;
 // 19.3) Lexical Structure
 non terminal literal;
 // 19.4) Types, Values, and Variables
@@ -118,7 +173,7 @@ non terminal variable_declarator_id, variable_initializer;
 non terminal method_declaration, method_header, method_declarator;
 non terminal formal_parameter_list_opt, formal_parameter_list;
 non terminal formal_parameter;
-non terminal throws_optional, throws;
+non terminal throws_opt, throws;
 non terminal class_type_list, method_body;
 // 19.8.4) Static Initializers
 non terminal static_initializer;
@@ -174,7 +229,7 @@ non terminal postfix_expression;
 non terminal postincrement_expression, postdecrement_expression;
 non terminal unary_expression, unary_expression_not_plus_minus;
 non terminal preincrement_expression, predecrement_expression;
-non terminal casting_expression;
+non terminal cast_expression;
 non terminal multiplicative_expression, additive_expression;
 non terminal shift_expression, relational_expression, equality_expression;
 non terminal and_expression, exclusive_or_expression, inclusive_or_expression;
@@ -186,70 +241,148 @@ non terminal assignment_operator;
 non terminal expression_opt, expression;
 non terminal constant_expression;
 
-start with javaGrammar;
 
-// The Syntactic Grammar
-javaGrammar ::=	compilation_unit;
+start with goal;
 
-// Lexical Structure.
-literal ::=	INTEGER_LITERAL |FLOATING_POINT_LITERAL | BOOLEAN_LITERAL |	CHARACTER_LITERAL |	STRING_LITERAL | NULL_LITERAL;
+// 19.2) The Syntactic Grammar
+goal ::=	compilation_unit
+	;
 
-//Types, Values, and Variables
-type ::=	primitive_type | reference_type;
-primitive_type ::=	numeric_type |	BOOLEAN;
-numeric_type::=	integral_type |	floating_point_type;
-integral_type ::= BYTE | SHORT | INT | LONG | CHAR;
-floating_point_type ::= FLOAT |	DOUBLE;
+// 19.3) Lexical Structure.
+literal ::=	INTEGER_LITERAL
+	|	FLOATING_POINT_LITERAL
+	|	BOOLEAN_LITERAL
+	|	CHARACTER_LITERAL
+	|	STRING_LITERAL
+	|	NULL_LITERAL
+	;
 
-reference_type ::= class_or_interface_type | array_type;
+// 19.4) Types, Values, and Variables
+type	::=	primitive_type
+	|	reference_type
+	;
+primitive_type ::=
+		numeric_type
+	|	BOOLEAN
+	;
+numeric_type::=	integral_type
+	|	floating_point_type
+	;
+integral_type ::= 
+		BYTE 
+	|	SHORT 
+	|	INT 
+	|	LONG 
+	|	CHAR 
+	;
+floating_point_type ::= 
+		FLOAT 
+	|	DOUBLE
+	;
+
+reference_type ::=
+		class_or_interface_type
+	|	array_type
+	;
 class_or_interface_type ::= name;
+
 class_type ::=	class_or_interface_type;
 interface_type ::= class_or_interface_type;		
 
-array_type ::=	primitive_type dims | name dims;
+array_type ::=	primitive_type dims
+	|	name dims
+	;
 
 // 19.5) Names
-name ::= simple_name | qualified_name;
-simple_name ::=	IDENTIFIER;
-qualified_name ::=	name DOT IDENTIFIER;
+name	::=	simple_name
+	|	qualified_name
+	;
+simple_name ::=	IDENTIFIER
+	;
+qualified_name ::=
+		name DOT IDENTIFIER
+	;
 
 // 19.6) Packages
-compilation_unit ::= package_declaration_opt import_declarations_opt type_declarations_opt;
-
-package_declaration_opt ::= package_declaration | ;
+compilation_unit ::=
+		package_declaration_opt 
+		import_declarations_opt
+		type_declarations_opt
+		;
+package_declaration_opt ::= package_declaration 
+                          | ;
 import_declarations_opt ::= import_declarations | ;
 type_declarations_opt   ::= type_declarations   | ;
 
-import_declarations ::= import_declaration | import_declarations import_declaration;
-type_declarations ::= type_declaration | type_declarations type_declaration;
-package_declaration ::= PACKAGE name SEMICOLON;
-import_declaration ::= 	single_type_import_declaration | type_import_on_demand_declaration;
-single_type_import_declaration ::= IMPORT name SEMICOLON;
-type_import_on_demand_declaration ::= IMPORT name DOT MULT SEMICOLON;
-type_declaration ::= class_declaration | interface_declaration | SEMICOLON;
+import_declarations ::= 
+		import_declaration
+	|	import_declarations import_declaration
+	;
+type_declarations ::= 
+		type_declaration
+	|	type_declarations type_declaration
+	;
+package_declaration ::= 
+		PACKAGE name SEMICOLON
+	;
+import_declaration ::= 
+		single_type_import_declaration
+	|	type_import_on_demand_declaration
+	;
+single_type_import_declaration ::= 
+		IMPORT name SEMICOLON
+	;
+type_import_on_demand_declaration ::=
+		IMPORT name DOT MULT SEMICOLON
+	;
+type_declaration ::=
+		class_declaration
+	|	interface_declaration
+	|	SEMICOLON
+	;
 
 // 19.7) Productions used only in the LALR(1) grammar
-modifiers_opt::= | modifiers
+modifiers_opt::=
+	|	modifiers
 	;
-modifiers ::= 	modifier |	modifiers modifier;
-modifier ::=	PUBLIC | PROTECTED | PRIVATE |	STATIC
+modifiers ::= 	modifier
+	|	modifiers modifier
+	;
+modifier ::=	PUBLIC | PROTECTED | PRIVATE
+	|	STATIC
 	|	ABSTRACT | FINAL | NATIVE | SYNCHRONIZED | TRANSIENT | VOLATILE
-	|	STRICTFP ; // note that semantic analysis must check that the
+	|	STRICTFP // note that semantic analysis must check that the
 	                 // context of the modifier allows strictfp.
+	;
 
 // 19.8) Classes
 
 // 19.8.1) Class Declaration:
-class_declaration ::= modifiers_opt CLASS IDENTIFIER super_opt interfaces_opt class_body;
-super_cl ::=	EXTENDS class_type;
-super_opt ::=	super_cl | ;
-interfaces ::=	IMPLEMENTS interface_type_list;
-interfaces_opt::= |	interfaces ;
-interface_type_list ::=  interface_type | interface_type_list COMMA interface_type;
+class_declaration ::= 
+	modifiers_opt CLASS IDENTIFIER super_opt interfaces_opt class_body
+	;
+super_cl ::=	EXTENDS class_type
+	;
+super_opt ::=	
+	|	super_cl
+	;
+interfaces ::=	IMPLEMENTS interface_type_list
+	;
+interfaces_opt::=
+	|	interfaces 
+	;
+interface_type_list ::= 
+		interface_type
+	|	interface_type_list COMMA interface_type
+	;
 class_body ::=	LBRACE class_body_declarations_opt RBRACE 
 	;
-class_body_declarations_opt ::= class_body_declarations | ;
-class_body_declarations ::= class_body_declaration | class_body_declarations class_body_declaration;
+class_body_declarations_opt ::= 
+	|	class_body_declarations ;
+class_body_declarations ::= 
+		class_body_declaration
+	|	class_body_declarations class_body_declaration
+	;
 class_body_declaration ::=
 		class_member_declaration
 	|	static_initializer
@@ -273,35 +406,69 @@ variable_declarators ::=
 		variable_declarator
 	|	variable_declarators COMMA variable_declarator
 	;
-variable_declarator ::=variable_declarator_id |	variable_declarator_id EQ variable_initializer;
-variable_declarator_id ::=IDENTIFIER |	variable_declarator_id LBRACK RBRACK;
-variable_initializer ::= expression | array_initializer;
+variable_declarator ::=
+		variable_declarator_id
+	|	variable_declarator_id EQ variable_initializer
+	;
+variable_declarator_id ::=
+		IDENTIFIER
+	|	variable_declarator_id LBRACK RBRACK
+	;
+variable_initializer ::=
+		expression
+	|	array_initializer
+	;
 
 // 19.8.3) Method Declarations
-method_declaration ::=	method_header method_body;
-method_header ::= modifiers_opt type method_declarator throws_optional |	modifiers_opt VOID method_declarator throws_optional;
-method_declarator ::= IDENTIFIER LPAREN formal_parameter_list_opt RPAREN | method_declarator LBRACK RBRACK; // deprecated
+method_declaration ::=
+		method_header method_body
+	;
+method_header ::=
+		modifiers_opt type method_declarator throws_opt
+	|	modifiers_opt VOID method_declarator throws_opt
+	;
+method_declarator ::=
+		IDENTIFIER LPAREN formal_parameter_list_opt RPAREN
+	|	method_declarator LBRACK RBRACK // deprecated
 	// be careful; the above production also allows 'void foo() []'
-
-formal_parameter_list_opt ::= formal_parameter_list |;
-formal_parameter_list ::= formal_parameter | formal_parameter_list COMMA formal_parameter;
+	;
+formal_parameter_list_opt ::=
+	|	formal_parameter_list
+	;
+formal_parameter_list ::=
+		formal_parameter
+	|	formal_parameter_list COMMA formal_parameter
+	;
 formal_parameter ::=
 		type variable_declarator_id
 	|	FINAL type variable_declarator_id
 	;
-throws_optional ::=	|	throws	;
-throws ::=	THROWS class_type_list;
-class_type_list ::=	class_type |	class_type_list COMMA class_type
+throws_opt ::=	
+	|	throws
 	;
-method_body ::=	block |	SEMICOLON;
+throws ::=	THROWS class_type_list
+	;
+class_type_list ::=
+		class_type
+	|	class_type_list COMMA class_type
+	;
+method_body ::=	block
+	|	SEMICOLON
+	;
 
 // 19.8.4) Static Initializers
-static_initializer ::= STATIC block;
+static_initializer ::=
+		STATIC block
+	;
 
 // 19.8.5) Constructor Declarations
-constructor_declaration ::= modifiers_opt constructor_declarator throws_optional constructor_body;
-			
-constructor_declarator ::= simple_name LPAREN formal_parameter_list_opt RPAREN;
+constructor_declaration ::=
+		modifiers_opt constructor_declarator throws_opt 
+			constructor_body
+	;
+constructor_declarator ::=
+		simple_name LPAREN formal_parameter_list_opt RPAREN
+	;
 constructor_body ::=
 		LBRACE explicit_constructor_invocation
 			block_statements RBRACE
@@ -373,19 +540,22 @@ block_statements_opt ::=
 	|	block_statements
 	;
 block_statements ::=
-		block_statement |	block_statements block_statement;
-		
+		block_statement
+	|	block_statements block_statement
+	;
 block_statement ::=
 		local_variable_declaration_statement
 	|	statement
 	|	class_declaration
 	|	interface_declaration
 	;
-	
 local_variable_declaration_statement ::=
-		local_variable_declaration SEMICOLON;
-		
-local_variable_declaration ::= type variable_declarators | FINAL type variable_declarators;
+		local_variable_declaration SEMICOLON
+	;
+local_variable_declaration ::=
+		type variable_declarators
+	|	FINAL type variable_declarators
+	;
 statement ::=	statement_without_trailing_substatement
 	|	labeled_statement
 	|	if_then_statement
@@ -633,9 +803,9 @@ unary_expression_not_plus_minus ::=
 		postfix_expression
 	|	COMP unary_expression
 	|	NOT unary_expression
-	|	casting_expression
+	|	cast_expression
 	;
-casting_expression ::=
+cast_expression ::=
 		LPAREN primitive_type dims_opt RPAREN unary_expression
 	|	LPAREN expression RPAREN unary_expression_not_plus_minus
 	|	LPAREN name dims RPAREN unary_expression_not_plus_minus
@@ -723,7 +893,8 @@ assignment_operator ::=
 expression_opt ::=
 	|	expression
 	;
-expression ::=	assignment_expression;
+expression ::=	assignment_expression
+	;
 constant_expression ::=
 		expression
 	;

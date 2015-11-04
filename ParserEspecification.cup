@@ -533,15 +533,22 @@ statement_expression ::=
 	|	class_instance_creation_expression
 	;
 if_then_statement ::=
-		IF LPAREN expression RPAREN statement
+		IF LPAREN expression:t RPAREN statement
+			{: if(parser.second) if(!t.isBool()) parser.sem_error(""+t, "NOT A BOOLEAN");	:}
+	|	IF error 
+			{: parser.report_error("if_then_statement","WRONG"); :} 
+		RPAREN statement
 	;
 if_then_else_statement ::=
-		IF LPAREN expression RPAREN statement_no_short_if 
-			ELSE statement
+		IF LPAREN expression:t RPAREN statement_no_short_if ELSE statement
+			{: if(parser.second) if(!t.isBool()) parser.sem_error(""+t, "NOT A BOOLEAN");	:}
+	|	IF LPAREN error 
+			{: parser.report_error("expression","WRONG"); :} 
+		RPAREN statement_no_short_if ELSE statement
 	;
 if_then_else_statement_no_short_if ::=
-		IF LPAREN expression RPAREN statement_no_short_if
-			ELSE statement_no_short_if
+		IF LPAREN expression:t RPAREN statement_no_short_if ELSE statement_no_short_if
+			{: if(parser.second) if(!t.isBool()) parser.sem_error(""+t, "NOT A BOOLEAN");	:}
 	;
 switch_statement ::=
 		SWITCH LPAREN expression RPAREN switch_block

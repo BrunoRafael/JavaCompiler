@@ -16,7 +16,28 @@ import parser.Sym;
 //%cupdebug
 
 %{
-  StringBuilder string = new StringBuilder();
+	
+	StringBuffer string = new StringBuffer();
+    public Lexer(ComplexSymbolFactory sf, java.io.InputStream is){
+		this(is);
+        symbolFactory = sf;
+    }
+	public Lexer(ComplexSymbolFactory sf, java.io.Reader reader){
+		this(reader);
+        symbolFactory = sf;
+    }
+    
+    public Lexer(){};
+    
+    private StringBuffer sb;
+    private ComplexSymbolFactory symbolFactory;
+    private int csline,cscolumn;
+
+      public String current_lexeme(){
+    int l = yyline+1;
+    int c = yycolumn+1;
+    return " (line: "+l+" , column: "+c+" , lexeme: '"+yytext()+"')";
+  }
   
   private Symbol symbol(int type) {
     return new Symbol(type, yyline+1, yycolumn+1, yytext());

@@ -14,6 +14,7 @@ public class Main {
                 p.parse();
                 System.out.println("No errors.");
             }
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.exit(1);

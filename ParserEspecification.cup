@@ -283,7 +283,12 @@ method_header ::= modifiers_opt type method_declarator throws_optional |	modifie
 method_declarator ::= IDENTIFIER LPAREN formal_parameter_list_opt RPAREN | method_declarator LBRACK RBRACK; // deprecated
 	// be careful; the above production also allows 'void foo() []'
 
-formal_parameter_list_opt ::= formal_parameter_list |;
+formal_parameter_list_opt ::=
+
+			{: RESULT = Type.voidtype(); :}
+	|	formal_parameter_list:t
+			{: RESULT = t; :}
+	;
 formal_parameter_list ::= formal_parameter | formal_parameter_list COMMA formal_parameter;
 formal_parameter ::=
 		type variable_declarator_id
@@ -299,9 +304,36 @@ method_body ::=	block |	SEMICOLON;
 static_initializer ::= STATIC block;
 
 // 19.8.5) Constructor Declarations
-constructor_declaration ::= modifiers_opt constructor_declarator throws_optional constructor_body;
+constructor_declaration ::= constructor_declarator constructor_body;
 			
-constructor_declarator ::= simple_name LPAREN formal_parameter_list_opt RPAREN;
+constructor_declarator ::=
+		modifiers_opt:m IDENTIFIER:n 
+			{: if(parser.first) { if (!Env.put(n, null)) parser.sem_error(n,"DUPLICATE NAME");
+						    else { Name c = Name.getCurrentClass();
+			   			    	     String cname = c.getName();
+						    	     if (!n.equals(cname)) parser.sem_error(n+", "+cname,"CONSTRUCTOR NAME DIFFERENT FROM CLASS NAME");
+						    }
+						    System.out.println(" CONSTRUCTOR ENTRY: "+n);
+		 				    Env.push();
+			   }
+			   if(parser.second) { System.out.println(" CONSTRUCTOR ENTRY: "+n);
+						     Env.next();
+			   }
+			:}
+		LPAREN formal_parameter_list_opt:t RPAREN
+			{: if(parser.first) { Name c = Name.getCurrentClass();
+			   			    String cname = c.getName();
+			   			    Symb csymb = Env.get(cname);
+			   			    Symb s;
+			   			    if(csymb.isPublic()) s = new Symb(Type.constructor(t, Type.reference(Type.getName(n))), c, m.booleanValue());
+			   			    else { if(m.booleanValue()) parser.warning(n, "PUBLIC CONSTRUCTOR DECLARED IN PRIVATE CLASS");
+				    		           s = new Symb(Type.constructor(t, Type.reference(Type.getName(n))), c, false);
+			   			    }	
+			   			    Env.putSymb(n, s);
+			   }
+			:}
+	;
+
 constructor_body ::=
 		LBRACE explicit_constructor_invocation
 			block_statements RBRACE

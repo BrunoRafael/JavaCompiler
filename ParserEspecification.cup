@@ -1,6 +1,7 @@
 package parser;
 
 import java_cup.runtime.*;
+import type.*;
 
 parser code  {: 
   public void report_error(String message, Object info) {
@@ -189,29 +190,94 @@ non terminal constant_expression;
 start with javaGrammar;
 
 // The Syntactic Grammar
-javaGrammar ::=	compilation_unit;
+javaGrammar ::=	compilation_unit {: Hashtable forwards;
+			   if(parser.first) { forwards = Name.ForwardHashtable();
+						    int err = forwards.size();
+						    if(err > 0) { parser.errors = parser.errors + err;
+     						    	     		System.err.println("Error : Semantic error");
+      					    	     		System.err.println("  ==> CANNOT FIND CLASSES ("+err+"): "+forwards+"\n");
+						    }
+			   }
+			:}
+	;
 
 // Lexical Structure.
-literal ::=	INTEGER_LITERAL |FLOATING_POINT_LITERAL | BOOLEAN_LITERAL |	CHARACTER_LITERAL |	STRING_LITERAL | NULL_LITERAL;
+literal ::=	INTEGER_LITERAL {: RESULT = Type.integer(); :} |
+			FLOATING_POINT_LITERAL {: RESULT = Type.floating(); :} | 
+			BOOLEAN_LITERAL {: RESULT = Type.bool(); :} |	
+			CHARACTER_LITERAL {: RESULT = Type.character(); :}|	
+			STRING_LITERAL {: Symb s = Env.get("String", Env.getRoot()); 
+			   if(s == null) RESULT = Type.reference(Type.forwardName("String", parser.s.current_lexeme())); 
+			   else RESULT = Type.reference(s.getType());
+			:}| 
+			NULL_LITERAL {: RESULT = Type.reference(Type.voidtype()); :};
 
 //Types, Values, and Variables
-type ::=	primitive_type | reference_type;
-primitive_type ::=	numeric_type |	BOOLEAN;
-numeric_type::=	integral_type |	floating_point_type;
-integral_type ::= BYTE | SHORT | INT | LONG | CHAR;
-floating_point_type ::= FLOAT |	DOUBLE;
+type ::=	primitive_type:t {: RESULT = t; :}|
+			reference_type:t {: RESULT = t; :};
+			
+primitive_type ::=	numeric_type:t {: RESULT = t; :}|	
+					BOOLEAN {: RESULT = Type.bool(); :};
+					
+numeric_type::=	integral_type |	
+				floating_point_type;
+				
+integral_type ::= 	BYTE {: RESULT = Type.byteType(); :} | 
+					SHORT {: RESULT = Type.shorting(); :} || 
+					INT {: RESULT = Type.integer(); :} | 
+					LONG {: RESULT = Type.long(); :} || 
+					CHAR {: RESULT = Type.character(); :};
+				
+floating_point_type ::= FLOAT {: RESULT = Type.floating(); :}|	
+										DOUBLE {: RESULT = Type.doubleType(); :};
 
-reference_type ::= class_or_interface_type | array_type;
-class_or_interface_type ::= name;
+reference_type ::= class_or_interface_type | array_type :t {: RESULT = Type.reference(t); :};
+class_or_interface_type ::= name:sn
+			{: Symb s = sn.rs; 
+			   if(s == null) RESULT = Type.reference(Type.forwardName(sn.name, parser.s.current_lexeme())); 
+			   else RESULT = Type.reference(s.getType());
+			:};
 class_type ::=	class_or_interface_type;
 interface_type ::= class_or_interface_type;		
 
-array_type ::=	primitive_type dims | name dims;
+array_type ::=	primitive_type:t dims {: RESULT = Type.array(0, t); :}| 
+				name :sn dims
+					{: Symb s = sn.cs; 
+			   			if(s == null) { parser.sem_error(sn.name,"UNKNOWN NAME");
+				    		 RESULT = Type.errortype();
+			   			} else RESULT = Type.array(0, s.getType());
+					:};
 
 // 19.5) Names
 name ::= simple_name | qualified_name;
-simple_name ::=	IDENTIFIER;
-qualified_name ::=	name DOT IDENTIFIER;
+simple_name ::=	IDENTIFIER:ident
+			{: if(parser.first) RESULT = new Sname(ident, Env.get(ident), Env.get(ident, Env.getRoot())); 
+			   if(parser.second) RESULT = new Sname(ident, Env.get(ident), Env.get(ident, Env.getRoot()));
+			:};
+qualified_name ::=	name:sn DOT IDENTIFIER:n {: Symb s1 = sn.cs;
+			   if(s1 == null) { parser.sem_error(sn.name, "UNKNOWN NAME");
+						  RESULT = new Sname(n, null, null);
+			   }
+			   else { Type t1 = s1.getType();
+				    if(!t1.isReference()) { parser.sem_error(""+t1, "NOT A REFERENCE");
+								    RESULT = new Sname(n, null, null);
+				    }
+				    else { Type r = ((Reference)t1).getReferred();
+					     if(!r.isName()) { parser.sem_error(""+r, "NOT A CLASS");
+								     RESULT = new Sname(n, null, null);
+					     }
+					     else { Symb s2 = Env.get(n, ((Name)r).getEnv()); 
+			   			     	if(s2 == null) { parser.sem_error(n,"UNKNOWN NAME"); 
+									     RESULT = new Sname(n, null, null);
+							}
+			   			     	else if (!s2.isPublic() && !Name.getCurrentClass().isSubclass(s2.getOwner())) { parser.sem_error(n, "ILLEGAL ACCESS TO PRIVATE ATTRIBUTE");
+				    					 				     			     	      		  RESULT = new Sname(n, null, null);
+						  	     }
+						  	     else RESULT = new Sname(n, s2, Env.get(n, Env.getRoot()));
+					     }								
+				    }
+			   }
+			:};
 
 // 19.6) Packages
 compilation_unit ::= package_declaration_opt import_declarations_opt type_declarations_opt;

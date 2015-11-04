@@ -1,0 +1,90 @@
+
+
+public class TestScopeA{
+
+	public TestScopeA(){
+	}
+
+	public String getScore(){
+        	int testscore = 76;
+       		String grade;
+
+        	if (testscore >= 90) {
+         	   	grade = 'A';
+       		} else if (testscore >= 80) {
+            		grade = 'B';
+        	} else if (testscore >= 70) {
+            		grade = 'C';
+        	} else if (testscore >= 60) {
+            		grade = 'D';
+        	} else {
+            		grade = 'F';
+        	}
+		return "Grade = " + grade;
+	}
+
+	public void literal(){
+		boolean result = true;
+		boolean result2 = false;
+		char capitalC = 'C';
+		byte b = 100;
+		short s = 10000;
+		int i = 100000;
+	}
+
+	public void relationalExpression(){
+        	int value1 = 1;
+        	int value2 = 2;
+        	if(value1 == value2)
+            		System.out.println("value1 == value2");
+        	if(value1 != value2)
+            		System.out.println("value1 != value2");
+        	if(value1 > value2)
+            		System.out.println("value1 > value2");
+        	if(value1 < value2)
+            		System.out.println("value1 < value2");
+        	if(value1 <= value2)
+            		System.out.println("value1 <= value2");
+	}
+
+	public void relationalExpression2(){
+	        int value1 = 1;
+        	int value2 = 2;
+        	if((value1 == 1) && (value2 == 2))
+            		System.out.println("value1 is 1 AND value2 is 2");
+        	if((value1 == 1) || (value2 == 1))
+            		System.out.println("value1 is 1 OR value2 is 1");
+	}
+
+	public void overLoad(String s){
+		System.out.println(s);
+	}
+
+	public void overLoad(int i){
+		System.out.println(i);
+	}
+
+	public void overLoad(double f){
+		System.out.println(f);
+	}
+
+	public void overLoad(int i, double f){
+		System.out.println(i);
+		System.out.println(f);
+	}
+
+
+
+	public static void main(String[] args){
+		TestScopeA t = new TestScopeA();
+		t.getScore();
+		t.literal();
+		t.relationalExpression();
+		t.relationalExpression2();
+		t.overLoad("XXXX");
+		t.overLoad(45);
+		t.overLoad(25.34);
+		t.overLoad(22, 13.5);
+	}
+
+}

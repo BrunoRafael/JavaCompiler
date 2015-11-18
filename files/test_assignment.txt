@@ -1,6 +1,7 @@
-public class Assignment{
+public class Assignment {
 
-	public int in;
+	public int in = 15;
+	p = 50;
 	private float fl;
 	protected static double db;
 	public final String str;
@@ -8,7 +9,7 @@ public class Assignment{
 	long l = 1234567891;
 	byte b = 1;
 	int i = 2;
-	float f = 2.0;
+	float f 2.0
 	String s = "string";
 	boolean bT = true;
 	boolean bF = false;

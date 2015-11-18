@@ -61,16 +61,18 @@ init with {:
         }
         if(second) Env.initSecond();
  
-  ComplexSymbolFactory f = new ComplexSymbolFactory();
-  symbolFactory = f;
-  File file = new File(Driver.arquivo);
-  FileInputStream fis = null;
-  try {
-    fis = new FileInputStream(file);
-  } catch (IOException e) {
-    e.printStackTrace();
-  }
-  lexer = new Lexer(f,fis);
+  ComplexSymbolFactory csf = new ComplexSymbolFactory();
+  symbolFactory = csf;
+	for(String f : Main.files){
+  		File file = new File("files/" + f);
+  		FileInputStream fis = null;
+  		try {
+    		fis = new FileInputStream(file);
+  		} catch (IOException e) {
+    		e.printStackTrace();
+  		}
+  		lexer = new Lexer(csf,fis);
+	}
 :};
 scan with {: return lexer.next_token(); :};
  

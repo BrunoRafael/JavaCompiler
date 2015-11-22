@@ -1,10 +1,12 @@
 package scanner;
 
+//IMPORTS
 import java.io.IOException;
 import parser.Sym;
 import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import java_cup.runtime.Symbol;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 
 %%
 
@@ -106,21 +108,21 @@ FLit3    = [0-9]+
 Exponent = [eE] [+-]? [0-9]+
 
 
-/* comments */
+//COMENTARIOS
 Comment = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
 TraditionalComment = "/*" {CommentContent} \*+ "/"
 EndOfLineComment = "//" [^\r\n]* {Newline}
 CommentContent = ( [^*] | \*+[^*/] )*
 DocumentationComment = "/*" "*"+ [^/*] ~"*/"
 
-
+//IDENTACAO
 ident = ([:jletter:] | "_" ) ([:jletterdigit:] | [:jletter:] | "_" )*
 
 %eofval{
     return symbolFactory.newSymbol("EOF",sym.EOF);
 %eofval}
 
-/* string and character literals */
+//STRINGS E LITERAIS
 StringCharacter = [^\r\n\"\\]
 SingleCharacter = [^\r\n\'\\]
 
@@ -275,9 +277,7 @@ SingleCharacter = [^\r\n\'\\]
 
 }
 
-// error fallback
-
-/* error fallback */
+//ERRO DE CARACATERE INVALIDO
 {Number}{ident} { throw new RuntimeException("Variáveis não podem começar com números, erro na variável:\n"
 											+yytext()); }
 [^]|\n                             { throw new RuntimeException("Caractere inválido."); }

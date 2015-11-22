@@ -1,5 +1,18 @@
 package parser;
 
+//IMPORTS
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import main.Main;
+import scanner.Lexer;
+import symtab.Env;
+import symtab.Symb;
+import type.Method;
+import type.Name;
+import type.Reference;
+import type.Type;
 import java_cup.runtime.*;
 
 parser code {:
@@ -9,54 +22,49 @@ parser code {:
   public static boolean first = true, second = false;
  
 public void report_error(String message, Object info) {
-
 	StringBuilder m = new StringBuilder("Error ");
-
     if (info instanceof java_cup.runtime.Symbol) 
       m.append( "("+info.toString()+")" );
-     
     m.append(" : "+message);
-   
     System.out.println(m);
-
-
 }
  
- public void report_fatal_error(String message, Object info) {
-   report_error(message, info);
-   throw new RuntimeException("Erro Sintatico.");
- }
-  public void sem_error(String lexeme, String message) {
-        errors++;
-        System.err.println("Error "+ lexer.current_lexeme() + " : Semantic error");
-      System.err.println("  "+ errors + "==> " + message + ": "+ lexeme + "\n");
+public void report_fatal_error(String message, Object info) {
+	report_error(message, info);
+    throw new RuntimeException("Erro Sintatico.");
+}
+ 
+public void sem_error(String lexeme, String message) {
+	errors++;
+    System.err.println("Error "+ lexer.current_lexeme() + " : Semantic error");
+    System.err.println("  "+ errors + "==> " + message + ": "+ lexeme + "\n");
   }
  
-  public void warning(String lexeme, String message) {
-        warnings++;
-        System.err.println("Warning "+ lexer.current_lexeme());
-      System.err.println("  "+ warnings + "==> " + message + ": "+ lexeme + "\n");
-  }
- 
- 
+ //SHOW WARNINGS
+public void warning(String lexeme, String message) {
+	warnings++;
+    System.err.println("Warning "+ lexer.current_lexeme());
+    System.err.println("  "+ warnings + "==> " + message + ": "+ lexeme + "\n");
+}
+  
 :}
  
 action code {:
-        class Sname {
-          public String name;
-          public Symb cs;
-          public Symb rs;
+	class Sname {
+    	public String name;
+        public Symb cs;
+        public Symb rs;
  
-          Sname(String n, Symb c, Symb r) {
-                name = n;
-                cs = c;
-                rs = r;
-          }
+        Sname(String n, Symb c, Symb r) {
+        	name = n;
+            cs = c;
+            rs = r;
         }
+    }
  
 :};
  
-/* define how to connect to the scanner! */
+//COMO EH CONECTADO COM O SCANNER
 init with {:
  
         if(first) {     Type.initTypes();
@@ -83,7 +91,7 @@ init with {:
 :};
 scan with {: return lexer.next_token(); :};
  
-/* Terminals (tokens returned by the scanner). */
+//TERMINAIS
 terminal            SEMI, PACKAGE, POINT, COMMA, IMPORT, MULT, CLASS, EXTENDS, IMPLEMENTS;
 terminal                        PUBLIC, PROTECTED, PRIVATE, STATIC, ABSTRACT, FINAL, NATIVE, SYNCHRONIZED;
 terminal                        TRANSIENT, VOLATILE, LBRACE, RBRACE, LBRACK, RBRACK, EQ, MOD, MODEQ, NOT;
@@ -91,25 +99,23 @@ terminal                        MINUS, MINUSMINUS, PLUS, PLUSPLUS, PLUSEQ, MINUS
 terminal                        GT, LT, GTEQ, LTEQ, EQEQ, NOTEQ;
 terminal                        RETURN, THROW, BREAK, CONTINUE;
 terminal                        COMP, RSHIFTEQ, RSHIFT, SSHIFT, LSHIFT, LPAREN, RPAREN, NEW;
-terminal                        TRUE, FALSE, QUESTION, COLON, AMPERSAND, AMPERSANDEQ, OR, OROR, OREQ, OROREQ;
+terminal                        TRUE, FALSE, QUESTION, COLON, AMPERSAND, AMPERSANDEQ, OR, OREQ, OROREQ;
 terminal                        BYTE, CHAR, SHORT, INT, FLOAT, LONG, DOUBLE, XOREQ, XOR;
 terminal                        INTEGER_LITERAL_LONG, HEX_LITERAL, HEX_LITERAL_LONG;
 terminal                        OCT_LITERAL, OCT_LITERAL_LONG, FLOAT_LITERAL;
 terminal                        NULL, SUPER, THIS, INSTANCEOF, IF, ELSE, DO, WHILE, FOR, TRY, CATCH, FINALLY;
 terminal                        SWITCH, CASE, DEFAULT, INTERFACE;
-terminal java.lang.String     IDENTIFIER;
-terminal java.lang.Character    CHARACTER_LITERAL;
-terminal java.lang.String       STRING_LITERAL;
-terminal java.lang.Number INTEGER_LITERAL;
-terminal java.lang.Boolean BOOLEAN;
+terminal 						java.lang.String     IDENTIFIER;
+terminal 						java.lang.Character    CHARACTER_LITERAL;
+terminal 						java.lang.String       STRING_LITERAL;
+terminal 						java.lang.Number INTEGER_LITERAL;
+terminal 						java.lang.Boolean BOOLEAN;
  
- 
- 
-/* Non terminals */
-non terminal            inicio;
-non terminal            compilation_unit, package_statement_opt, package_statement;
-non terminal            import_statement_opt, import_statements, import_statement;
-non terminal            type_declarations_opt, type_declarations, type_declaration;
+//NAO TERMINAIS
+non terminal            		inicio;
+non terminal            		compilation_unit, package_statement_opt, package_statement;
+non terminal            		import_statement_opt, import_statements, import_statement;
+non terminal            		type_declarations_opt, type_declarations, type_declaration;
 non terminal                    class_declaration;
 non terminal                    modifiers, modifier;
 non terminal                    super_opt, super_cl, interfaces_opt, interfaces, interface_type_list;
@@ -124,19 +130,19 @@ non terminal                    expression, numeric_expression, num_const;
 non terminal                    testing_expression, test_const, logical_expression, logical_const;
 non terminal                    string_expression, bit_expression, bit_const, casting_expression;
 non terminal                    creating_expression, creating_expression_alt, arglist, array_expression_opt;
-non terminal                    literal_expression, integer_literal_desc, string, num_logic_expression;
+non terminal                    literal_expression, integer_literal_desc, num_logic_expression;
 non terminal                    if_statement, else_opt, do_statement, while_statement, parameter, switch_statement;
 non terminal                    for_statement, for_var_exp, expression_opt, try_statement, statements_try, try_opt;
 non terminal                    statements_switch_opt, statements_switch, statement_switch, arglist_opt;
 non terminal                    mcv_declarations, parameter_list, statement_aux, method_declaration;
 non terminal                    constructor_declaration, interface_declaration, inter_opt, parameter_list_opt;
 non terminal                    method_header, method_body;
-non terminal Type type;
-non terminal Boolean modifiers_opt;
-non terminal Sname name;
+non terminal 					Type type;
+non terminal 					Boolean modifiers_opt;
+non terminal 					Sname name;
  
  
-/* Precedences */
+//PREDECESSORES
 precedence left PLUS, MINUS;
 precedence left MULT, DIV;
 precedence left MOD;
@@ -157,21 +163,16 @@ precedence left LBRACK;
 precedence left GT, LT, GTEQ, LTEQ, EQEQ, NOTEQ, QUESTION;
 precedence left IDENTIFIER;
  
-precedence right AMPERSAND, AMPERSANDEQ, OR, OROR, OREQ, OROREQ, XOR, XOREQ;
+precedence right AMPERSAND, AMPERSANDEQ, OR, OREQ, OROREQ, XOR, XOREQ;
  
-/* The grammar rules */
-inicio ::= compilation_unit
-            ;
+//PRODUCOES DA GRAMATICA
+inicio ::= compilation_unit;
            
-compilation_unit ::= package_statement_opt import_statement_opt type_declarations_opt
-                                 ;
+compilation_unit ::= package_statement_opt import_statement_opt type_declarations_opt;
                                    
-package_statement_opt ::= package_statement
-                        |                                        
-                        ;
+package_statement_opt ::= package_statement | ;
                        
-package_statement ::= PACKAGE name SEMI
-                        ;
+package_statement ::= PACKAGE name SEMI;
                        
 name ::= IDENTIFIER:n
 {: if(parser.first) RESULT = new Sname(n, Env.get(n), Env.get(n, Env.getRoot()));
@@ -204,29 +205,17 @@ name ::= IDENTIFIER:n
                         :}
                         ;
                        
-import_statement_opt ::= import_statements
-                                                        |
-                                                        ;
+import_statement_opt ::= import_statements | ;
  
-import_statements ::= import_statement
-                                                | import_statements import_statement
-                                                ;
+import_statements ::= import_statement | import_statements import_statement ;
  
-import_statement ::= IMPORT name SEMI
-                                                | IMPORT name POINT MULT SEMI
-                                                ;
+import_statement ::= IMPORT name SEMI | IMPORT name POINT MULT SEMI ;
  
-type_declarations_opt ::= type_declarations
-                                                |
-                                                ;
+type_declarations_opt ::= type_declarations | ;
                                                
-type_declarations ::= type_declaration
-                                        | type_declarations type_declaration
-                                        ;
+type_declarations ::= type_declaration | type_declarations type_declaration ;
                                        
-type_declaration ::= class_declaration
-                                        | interface_declaration
-                                        ;
+type_declaration ::= class_declaration | interface_declaration ;
  
 class_declaration ::= modifiers_opt:m CLASS IDENTIFIER:n1
                         {: System.out.println("CLASS ENTRY: "+n1);
@@ -243,9 +232,7 @@ class_declaration ::= modifiers_opt:m CLASS IDENTIFIER:n1
 modifiers_opt ::= modifiers {: RESULT = Boolean.valueOf(true); :}
                 | {: RESULT = Boolean.valueOf(false); :}
                 ;
-modifiers ::= modifier
-                | modifiers modifier
-                ;
+modifiers ::= modifier | modifiers modifier ;
                
 modifier ::= PUBLIC
                 | PROTECTED
@@ -259,43 +246,28 @@ modifier ::= PUBLIC
                 | VOLATILE
                 ;
                
-super_cl ::= EXTENDS name
-        ;
-super_opt ::= super_cl 
-        |
-        ;
+super_cl ::= EXTENDS name;
+super_opt ::= super_cl | ;
        
-interfaces ::= IMPLEMENTS interface_type_list
-        ;
-interfaces_opt ::= interfaces
-        |
-        ;
-interface_type_list ::= name
-        | interface_type_list COMMA name
-        ;
+interfaces ::= IMPLEMENTS interface_type_list ;
+interfaces_opt ::= interfaces | ;
+interface_type_list ::= name | interface_type_list COMMA name ;
        
-field_aux ::= LBRACE field_declarations_opt RBRACE
-        ;
+field_aux ::= LBRACE field_declarations_opt RBRACE ;
        
-field_declarations_opt ::= field_declarations
-        |
-        ;
+field_declarations_opt ::= field_declarations | ;
        
-field_declarations ::= field_declaration
-        | field_declarations field_declaration
-        ;
+field_declarations ::= field_declaration | field_declarations field_declaration ;
        
 field_declaration ::= mcv_declarations
         | static_initializer
         | SEMI
         ;
        
-static_initializer ::= STATIC statement_block
-        ;
+static_initializer ::= STATIC statement_block ;
        
 statement_block ::= LBRACE statements_opt:t  RBRACE
-        {:RESULT = (Type)t;:}
-        ;
+        {:RESULT = (Type)t;:};
        
 statements_opt ::= statements:t {:RESULT = (Type)t;:}
         | {:RESULT = Type.voidtype();:}
@@ -361,16 +333,11 @@ type_specifier ::= BOOLEAN {: RESULT = Type.bool(); :}
                         :}
         ;
        
-bracks_opt ::= bracks
-        |
-        ;
+bracks_opt ::= bracks | ;
        
-bracks ::= brack
-        | bracks brack
-        ;
+bracks ::= brack | bracks brack ;
        
-brack ::= LBRACK RBRACK
-        ;
+brack ::= LBRACK RBRACK ;
        
 variable_declarators ::= variable_declarator:t
         {: RESULT = (Type)t; :}
@@ -378,7 +345,7 @@ variable_declarators ::= variable_declarator:t
         {: RESULT = (Type)t; :}
         ;
        
-variable_declarator ::=
+variable_declarator ::= 
                 IDENTIFIER bracks_opt variable_initializer_opt:t
                 {: RESULT = (Type)t; :}
         ;
@@ -393,12 +360,10 @@ variable_initializer ::= expression:t {: RESULT = (Type)t; :}
        
 array_initializer ::= LBRACE variable_initializers COMMA RBRACE
         |       LBRACE variable_initializers RBRACE
-        |       LBRACE RBRACE
-        ;
+        |       LBRACE RBRACE ;
        
 variable_initializers ::= variable_initializer
-        |       variable_initializers COMMA variable_initializer
-        ;
+        |       variable_initializers COMMA variable_initializer ;
        
 expression ::= numeric_expression:t {: RESULT = (Type)t; :}
         | testing_expression:t {: RESULT = (Type)t; :}
@@ -493,30 +458,20 @@ bit_const ::= SSHIFT
         | RSHIFTEQ
         ;
        
-casting_expression ::= LPAREN type RPAREN expression
-        ;
+casting_expression ::= LPAREN type RPAREN expression;
        
-creating_expression ::= NEW creating_expression_alt
-        ;
+creating_expression ::= NEW creating_expression_alt;
        
 creating_expression_alt ::= name LPAREN arglist_opt RPAREN
         | type_specifier array_expression_opt bracks_opt
-        | LPAREN expression RPAREN
-        ;
+        | LPAREN expression RPAREN ;
        
-arglist_opt ::= arglist
-        |
-        ;
+arglist_opt ::= arglist | ;
        
-arglist ::= expression
-        | arglist COMMA expression
-        ;
+arglist ::= expression | arglist COMMA expression ;
        
-array_expression_opt ::= LBRACK expression RBRACK
-        |
-        ;
+array_expression_opt ::= LBRACK expression RBRACK | ;
        
- 
 literal_expression ::= integer_literal_desc {: RESULT = Type.integer();:}
     | FLOAT_LITERAL {: RESULT = Type.floating();:}
     | STRING_LITERAL
@@ -539,18 +494,13 @@ integer_literal_desc ::= INTEGER_LITERAL {: RESULT = Type.integer(); :}
         | OCT_LITERAL_LONG
         ;
  
-if_statement ::= IF LPAREN expression RPAREN statement else_opt
-        ;
+if_statement ::= IF LPAREN expression RPAREN statement else_opt ;
        
-else_opt ::= ELSE statement
-        |
-        ;
+else_opt ::= ELSE statement | ;
        
-do_statement ::= DO statement WHILE LPAREN expression RPAREN SEMI
-        ;
+do_statement ::= DO statement WHILE LPAREN expression RPAREN SEMI ;
        
-while_statement ::= WHILE LPAREN expression RPAREN statement
-        ;
+while_statement ::= WHILE LPAREN expression RPAREN statement ;
        
 for_statement ::= FOR LPAREN for_var_exp expression_opt:t2 SEMI expression_opt SEMI RPAREN statement {:
         if(!((Type)t2).equals(Type.bool()) && !((Type)t2).equals(Type.voidtype())) {
@@ -569,36 +519,23 @@ expression_opt ::= expression:t {:RESULT = (Type)t;:}
         | {:RESULT = Type.voidtype();:}
         ;
        
-try_statement ::= TRY statements_try try_opt
-        ;
+try_statement ::= TRY statements_try try_opt ;
        
-statements_try ::= statement
-        | statements_try CATCH LPAREN parameter RPAREN statement
-        ;
+statements_try ::= statement | statements_try CATCH LPAREN parameter RPAREN statement ;
        
-try_opt ::= FINALLY statement
-        |
-        ;
+try_opt ::= FINALLY statement | ;
        
 parameter ::= type:t IDENTIFIER bracks_opt
         {: RESULT = (Type)t; :}
         ;
        
-switch_statement ::= SWITCH LPAREN expression RPAREN LBRACE statements_switch_opt RBRACE
-        ;
+switch_statement ::= SWITCH LPAREN expression RPAREN LBRACE statements_switch_opt RBRACE ;
        
-statements_switch_opt ::= statements_switch
-        |
-        ;
+statements_switch_opt ::= statements_switch | ;
        
-statements_switch ::= statement_switch
-        | statements_switch statement_switch
-        ;
+statements_switch ::= statement_switch | statements_switch statement_switch ;
        
-statement_switch ::= CASE expression COLON
-        | DEFAULT COLON
-        | statement
-        ;
+statement_switch ::= CASE expression COLON | DEFAULT COLON | statement ;
        
 mcv_declarations ::= method_declaration
         | constructor_declaration
@@ -665,18 +602,12 @@ method_body ::= bracks_opt statement_aux:t
                 if(parser.first) Env.pop();
                 if(parser.second) Env.next();
         :}
- 
         ;
 statement_aux ::= statement_block:t {:RESULT = (Type)t;:}
-        | SEMI {:RESULT = Type.voidtype();:}
-        ;
+        | SEMI {:RESULT = Type.voidtype();:} ;
        
-constructor_declaration ::= modifiers_opt IDENTIFIER LPAREN parameter_list_opt RPAREN statement_block
-        ;
+constructor_declaration ::= modifiers_opt IDENTIFIER LPAREN parameter_list_opt RPAREN statement_block ;
        
-interface_declaration ::=  modifiers_opt INTERFACE IDENTIFIER inter_opt LBRACE field_declarations_opt RBRACE
-        ;
+interface_declaration ::=  modifiers_opt INTERFACE IDENTIFIER inter_opt LBRACE field_declarations_opt RBRACE ;
        
-inter_opt ::= EXTENDS interface_type_list
-        |
-        ;
+inter_opt ::= EXTENDS interface_type_list | ;

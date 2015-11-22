@@ -99,7 +99,7 @@ terminal                        MINUS, MINUSMINUS, PLUS, PLUSPLUS, PLUSEQ, MINUS
 terminal                        GT, LT, GTEQ, LTEQ, EQEQ, NOTEQ;
 terminal                        RETURN, THROW, BREAK, CONTINUE;
 terminal                        COMP, RSHIFTEQ, RSHIFT, SSHIFT, LSHIFT, LPAREN, RPAREN, NEW;
-terminal                        TRUE, FALSE, QUESTION, COLON, AMPERSAND, AMPERSANDEQ, OR, OREQ, OROREQ;
+terminal                        TRUE, FALSE, QUESTION, COLON, AMPERSAND, AMPERSANDEQ, OR, OROR, OREQ, OROREQ;
 terminal                        BYTE, CHAR, SHORT, INT, FLOAT, LONG, DOUBLE, XOREQ, XOR;
 terminal                        INTEGER_LITERAL_LONG, HEX_LITERAL, HEX_LITERAL_LONG;
 terminal                        OCT_LITERAL, OCT_LITERAL_LONG, FLOAT_LITERAL;
@@ -163,7 +163,7 @@ precedence left LBRACK;
 precedence left GT, LT, GTEQ, LTEQ, EQEQ, NOTEQ, QUESTION;
 precedence left IDENTIFIER;
  
-precedence right AMPERSAND, AMPERSANDEQ, OR, OREQ, OROREQ, XOR, XOREQ;
+precedence right AMPERSAND, AMPERSANDEQ, OR, OROR, OREQ, OROREQ, XOR, XOREQ;
  
 //PRODUCOES DA GRAMATICA
 inicio ::= compilation_unit;
